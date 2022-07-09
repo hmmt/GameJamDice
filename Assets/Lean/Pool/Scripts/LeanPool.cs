@@ -9,52 +9,69 @@ namespace Lean.Pool
 	{
 		public const string HelpUrlPrefix = LeanHelper.HelpUrlPrefix + "LeanPool#";
 
-		public const string ComponentPathPrefix = LeanHelper.ComponentPathPrefix + "Pool/Lean ";
+		public const string ComponentPathPrefix = "Lean/Pool/Lean ";
 
-		/// <summary>This stores all references between a spawned GameObject and its pool.</summary>
+		/// <summary>When you spawn a prefab from this class, the association between the spawned clone and the pool that spawned it will be stored here so it can quickly be despawned.</summary>
 		public static Dictionary<GameObject, LeanGameObjectPool> Links = new Dictionary<GameObject, LeanGameObjectPool>();
 
 		/// <summary>This allows you to spawn a prefab via Component.</summary>
-		public static T Spawn<T>(T prefab, Transform parent = null, bool worldPositionStays = false)
+		public static T Spawn<T>(T prefab, Transform parent, bool worldPositionStays = false)
 			where T : Component
 		{
-			// Clone this component's GameObject
-			var gameObject = prefab != null ? prefab.gameObject : null;
-			var clone      = Spawn(gameObject, parent, worldPositionStays);
-
-			// Return the same component from the clone
-			return clone != null ? clone.GetComponent<T>() : null;
+			if (prefab == null) { Debug.LogError("Attempting to spawn a null prefab."); return null; }
+			var clone = Spawn(prefab.gameObject, parent, worldPositionStays); return clone != null ? clone.GetComponent<T>() : null;
 		}
 
 		/// <summary>This allows you to spawn a prefab via Component.</summary>
-		public static T Spawn<T>(T prefab, Vector3 position, Quaternion rotation, Transform parent = null, bool worldPositionStays = true)
+		public static T Spawn<T>(T prefab, Vector3 position, Quaternion rotation, Transform parent = null)
 			where T : Component
 		{
-			// Clone this component's GameObject
-			var gameObject = prefab != null ? prefab.gameObject : null;
-			var clone      = Spawn(gameObject, position, rotation, parent, worldPositionStays);
-
-			// Return the same component from the clone
-			return clone != null ? clone.GetComponent<T>() : null;
+			if (prefab == null) { Debug.LogError("Attempting to spawn a null prefab."); return null; }
+			var clone = Spawn(prefab.gameObject, position, rotation, parent); return clone != null ? clone.GetComponent<T>() : null;
 		}
 
-		/// <summary>This allows you to spawn a prefab via GameObject.</summary>
-		public static GameObject Spawn(GameObject prefab, Transform parent = null, bool worldPositionStays = false)
+		/// <summary>This allows you to spawn a prefab via Component.</summary>
+		public static T Spawn<T>(T prefab)
+			where T : Component
 		{
-			if (prefab != null)
-			{
-				return Spawn(prefab, prefab.transform.position, prefab.transform.rotation, parent, worldPositionStays);
-			}
-			else
-			{
-				Debug.LogError("Attempting to spawn a null prefab.");
-			}
-
-			return null;
+			if (prefab == null) { Debug.LogError("Attempting to spawn a null prefab."); return null; }
+			var clone = Spawn(prefab.gameObject); return clone != null ? clone.GetComponent<T>() : null;
 		}
 
 		/// <summary>This allows you to spawn a prefab via GameObject.</summary>
-		public static GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, bool worldPositionStays = true)
+		public static GameObject Spawn(GameObject prefab, Transform parent, bool worldPositionStays = false)
+		{
+			if (prefab == null) { Debug.LogError("Attempting to spawn a null prefab."); return null; }
+			var transform = prefab.transform;
+			if (parent != null && worldPositionStays == true)
+			{
+				return Spawn(prefab, prefab.transform.position, Quaternion.identity, Vector3.one, parent, worldPositionStays);
+			}
+			return Spawn(prefab, transform.localPosition, transform.localRotation, transform.localScale, parent, false);
+		}
+
+		/// <summary>This allows you to spawn a prefab via GameObject.</summary>
+		public static GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null)
+		{
+			if (prefab == null) { Debug.LogError("Attempting to spawn a null prefab."); return null; }
+			if (parent != null)
+			{
+				position = parent.InverseTransformPoint(position);
+				rotation = Quaternion.Inverse(parent.rotation) * rotation;
+			}
+			return Spawn(prefab, position, rotation, prefab.transform.localScale, parent, false);
+		}
+
+		/// <summary>This allows you to spawn a prefab via GameObject.</summary>
+		public static GameObject Spawn(GameObject prefab)
+		{
+			if (prefab == null) { Debug.LogError("Attempting to spawn a null prefab."); return null; }
+			var transform = prefab.transform;
+			return Spawn(prefab, transform.localPosition, transform.localRotation, transform.localScale, null, false);
+		}
+
+		/// <summary>This allows you to spawn a prefab via GameObject.</summary>
+		private static GameObject Spawn(GameObject prefab, Vector3 localPosition, Quaternion localRotation, Vector3 localScale, Transform parent, bool worldPositionStays)
 		{
 			if (prefab != null)
 			{
@@ -72,7 +89,7 @@ namespace Lean.Pool
 				// Try and spawn a clone from this pool
 				var clone = default(GameObject);
 
-				if (pool.TrySpawn(position, rotation, parent, worldPositionStays, ref clone) == true)
+				if (pool.TrySpawn(ref clone, localPosition, localRotation, localScale, parent, worldPositionStays) == true)
 				{
 					// Clone already registered?
 					if (Links.Remove(clone) == true)
@@ -103,7 +120,7 @@ namespace Lean.Pool
 			return null;
 		}
 
-		/// <summary>This will despawn all pool clones.</summary>
+		/// <summary>This will call <b>DespawnAll</b> on all active and enabled pools.</summary>
 		public static void DespawnAll()
 		{
 			foreach (var instance in LeanGameObjectPool.Instances)
@@ -143,16 +160,81 @@ namespace Lean.Pool
 					}
 					else
 					{
-						Debug.LogWarning("You're attempting to despawn a gameObject that wasn't spawned from this pool", clone);
+						Debug.LogWarning("You're attempting to despawn a gameObject that wasn't spawned from a pool (or the pool was destroyed).", clone);
 
 						// Fall back to normal destroying
-						Object.Destroy(clone);
+#if UNITY_EDITOR
+						if (Application.isPlaying == false)
+						{
+							Object.DestroyImmediate(clone);
+
+							return;
+						}
+#endif
+						if (delay > 0.0f)
+						{
+							Object.Destroy(clone);
+						}
+						else
+						{
+							Object.Destroy(clone, delay);
+						}
 					}
 				}
 			}
 			else
 			{
-				Debug.LogWarning("You're attempting to despawn a null gameObject", clone);
+				Debug.LogWarning("You're attempting to despawn a null gameObject.", clone);
+			}
+		}
+
+		/// <summary>This allows you to detach a clone via Component.
+		/// A detached clone will act as a normal GameObject, requiring you to manually destroy or otherwise manage it.
+		/// NOTE: If this clone has been despawned then it will still be parented to the pool.</summary>
+		public static void Detach(Component clone, bool detachFromPool = true)
+		{
+			if (clone != null) Detach(clone.gameObject, detachFromPool);
+		}
+
+		/// <summary>This allows you to detach a clone via GameObject.
+		/// A detached clone will act as a normal GameObject, requiring you to manually destroy or otherwise manage it.
+		/// NOTE: If this clone has been despawned then it will still be parented to the pool.</summary>
+		public static void Detach(GameObject clone, bool detachFromPool)
+		{
+			if (clone != null)
+			{
+				if (detachFromPool == true)
+				{
+					var pool = default(LeanGameObjectPool);
+
+					// Try and find the pool associated with this clone
+					if (Links.TryGetValue(clone, out pool) == true)
+					{
+						// Remove the association
+						Links.Remove(clone);
+
+						pool.Detach(clone);
+					}
+					else
+					{
+						if (LeanGameObjectPool.TryFindPoolByClone(clone, ref pool) == true)
+						{
+							pool.Detach(clone);
+						}
+						else
+						{
+							Debug.LogWarning("You're attempting to detach a GameObject that wasn't spawned from any pool (or its pool was destroyed).", clone);
+						}
+					}
+				}
+				else
+				{
+					Links.Remove(clone);
+				}
+			}
+			else
+			{
+				Debug.LogWarning("You're attempting to detach a null GameObject.", clone);
 			}
 		}
 	}

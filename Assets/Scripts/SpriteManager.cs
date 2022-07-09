@@ -17,4 +17,11 @@ public class SpriteManager : MonoBehaviour
     {
         return container.GetSpriteSet(index);
     }
+
+
+    public Sprite GetBevaiourIconSprite(int index)
+        => container.GetSprite($"BehaviourState_{index}");
+
+    public Sprite GetActingPowerIconSprite(int index)
+        => container.GetSprite($"ActingPowerIcon_{index}");
 }

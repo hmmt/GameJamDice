@@ -10,6 +10,7 @@ public class StartSceneLogic : MonoBehaviour
         {
             InitializePermenentData();
         }
+        StartGame();
     }
 
     private void InitializePermenentData()
@@ -20,7 +21,7 @@ public class StartSceneLogic : MonoBehaviour
     {
         SessionPlayer.instance.StartGameSession(PermanentPlayer.instance);
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene("DungeonScene");
+        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
 
     public void ResetGame()

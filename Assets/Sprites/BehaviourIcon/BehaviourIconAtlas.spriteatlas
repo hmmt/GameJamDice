@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BehaviourIconAtlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 393a1313628878e4da499809f1a83358, type: 3}
+    - {fileID: 2800000, guid: 8883e12e58ba2a847a4554ca2a213f71, type: 3}
+    - {fileID: 2800000, guid: 36025cb7872f9f04b9a45520262e9d55, type: 3}
+    - {fileID: 2800000, guid: dd04d27a99e3f7645a16bf78418386e8, type: 3}
+    - {fileID: 2800000, guid: 9952875d9cfa8e647aac290bef82c62e, type: 3}
+    - {fileID: 2800000, guid: c18c3d34d0b5ce24ab4529e7589655aa, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 393a1313628878e4da499809f1a83358, type: 3}
+  - {fileID: 21300000, guid: c18c3d34d0b5ce24ab4529e7589655aa, type: 3}
+  - {fileID: 21300000, guid: 36025cb7872f9f04b9a45520262e9d55, type: 3}
+  - {fileID: 21300000, guid: dd04d27a99e3f7645a16bf78418386e8, type: 3}
+  - {fileID: 21300000, guid: 9952875d9cfa8e647aac290bef82c62e, type: 3}
+  - {fileID: 21300000, guid: 8883e12e58ba2a847a4554ca2a213f71, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - BehaviourState_0
+  - BehaviourState_5
+  - BehaviourState_2
+  - BehaviourState_3
+  - BehaviourState_4
+  - BehaviourState_1
+  m_RenderDataMap: {}
+  m_Tag: BehaviourIconAtlas
+  m_IsVariant: 0

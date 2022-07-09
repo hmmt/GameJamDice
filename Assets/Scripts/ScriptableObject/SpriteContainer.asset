@@ -238,3 +238,7 @@ MonoBehaviour:
     - {fileID: 21300000, guid: 882daea2926192e488f0f26fc99ffbbd, type: 3}
     - {fileID: 21300000, guid: d7870a4b028764e49935be17e3ab3e63, type: 3}
     - {fileID: 21300000, guid: bdf0caa0e76baa1499cec48e40397985, type: 3}
+  spriteAtlasList:
+  - {fileID: 4343727234628468602, guid: 04564a050b58c9c46bb2737ae7db454d, type: 2}
+  - {fileID: 4343727234628468602, guid: c3d7f4c2e50db4d4188430d5110d810d, type: 2}
+  - {fileID: 4343727234628468602, guid: 1b1a81bf153e4724d9913fce451415a0, type: 2}

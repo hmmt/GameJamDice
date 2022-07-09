@@ -36,25 +36,31 @@ public class SessionPlayer
         currentDungeon = new SessionDungeon();
         inventory = new SessionInventory();
 
-        foreach(var dice in player.startInventory.actionPowerDiceList)
+        //foreach(var dice in player.startInventory.actionPowerDiceList)
+        //{
+        //    inventory.actingPowerDiceList.Add(dice);
+        //}
+        //foreach (var dice in player.startInventory.behaviourDiceList)
+        //{
+        //    inventory.behaviourDiceList.Add(dice);
+        //}
+        foreach (var currentDeck in player.startInventory.currentDeckList)
         {
-            inventory.actingPowerDiceList.Add(dice);
-        }
-        foreach (var dice in player.startInventory.behaviourDiceList)
-        {
-            inventory.behaviourDiceList.Add(dice);
+            inventory.actingPowerDiceList.Add(currentDeck.actingPowerDice);
+            inventory.behaviourDiceList.Add(currentDeck.behaviourDice);
+            deck.Add(new SessionDeck().SetBehaviourDice(currentDeck.behaviourDice)
+                                      .SetActingPowerDice(currentDeck.actingPowerDice));
         }
 
-
-        // 주사위 세팅
-        for (int i=0; i< player.startInventory.actionPowerDiceList.Count; i++)
-        {
-            if (i >= player.startInventory.behaviourDiceList.Count)
-                break;
-            deck.Add(new SessionDeck()
-            .SetActingPowerDice(player.startInventory.actionPowerDiceList[i])
-            .SetBehaviourDice(player.startInventory.behaviourDiceList[i]));
-        }
+        //// 주사위 세팅
+        //for (int i=0; i< player.startInventory.actionPowerDiceList.Count; i++)
+        //{
+        //    if (i >= player.startInventory.behaviourDiceList.Count)
+        //        break;
+        //    deck.Add(new SessionDeck()
+        //    .SetActingPowerDice(player.startInventory.actionPowerDiceList[i])
+        //    .SetBehaviourDice(player.startInventory.behaviourDiceList[i]));
+        //}
 
         // 던전 세팅
         currentDungeon.SetToDummy();

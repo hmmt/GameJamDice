@@ -10,12 +10,13 @@ using UnityEngine;
 public class StartInventory
 {
     // ±Õ¬˙¿∏¥œ ¿œ¥‹ public
-    public List<S3BehaviourDiceData> behaviourDiceList = new List<S3BehaviourDiceData>();
-    public List<S3ActingPowerDiceData> actionPowerDiceList = new List<S3ActingPowerDiceData>();
+    public List<SessionDeck> currentDeckList = new List<SessionDeck>();
+    //public List<S3BehaviourDiceData> behaviourDiceList = new List<S3BehaviourDiceData>();
+    //public List<S3ActingPowerDiceData> actionPowerDiceList = new List<S3ActingPowerDiceData>();
 
     public void Clear()
     {
-        behaviourDiceList.Clear();
-        actionPowerDiceList.Clear();
+        //behaviourDiceList.Clear();
+        //actionPowerDiceList.Clear();
     }
 }

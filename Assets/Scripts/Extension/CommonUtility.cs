@@ -235,4 +235,27 @@ public static class CommonUtility
     public static float Clamp01Value(this float value)
         => Mathf.Clamp01(value);
 
+    public static List<BehaviourState> BehavioursToList(this S3BehaviourDiceData behaviourDiceData)
+    {
+        var list = new List<BehaviourState>();
+        list.Add(behaviourDiceData.diceFace_1);
+        list.Add(behaviourDiceData.diceFace_2);
+        list.Add(behaviourDiceData.diceFace_3);
+        list.Add(behaviourDiceData.diceFace_4);
+        list.Add(behaviourDiceData.diceFace_5);
+        list.Add(behaviourDiceData.diceFace_6);
+        return list;
+    }
+
+    public static List<int> ActingPowerToList(this S3ActingPowerDiceData actingPowerDiceData)
+    {
+        var list = new List<int>();
+        list.Add(actingPowerDiceData.diceFace_1);
+        list.Add(actingPowerDiceData.diceFace_2);
+        list.Add(actingPowerDiceData.diceFace_3);
+        list.Add(actingPowerDiceData.diceFace_4);
+        list.Add(actingPowerDiceData.diceFace_5);
+        list.Add(actingPowerDiceData.diceFace_6);
+        return list;
+    }
 }

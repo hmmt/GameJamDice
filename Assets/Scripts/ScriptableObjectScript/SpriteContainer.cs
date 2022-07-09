@@ -7,6 +7,7 @@ using UnityEngine.U2D;
 public class SpriteContainer : ScriptableObject
 {
     [SerializeField] List<SpriteSet> atlasList;
+    [SerializeField] List<SpriteAtlas> spriteAtlasList;
 
     public SpriteSet GetSpriteSet(int index)
     {
@@ -15,6 +16,18 @@ public class SpriteContainer : ScriptableObject
 
         return atlasList[index];
     }
+
+    public Sprite GetSprite(string name)
+    {
+        foreach (var spriteAtlas in spriteAtlasList)
+        {
+            var sprite = spriteAtlas.GetSprite(name);
+            if (sprite != null)
+                return sprite;
+        }
+        return null;
+    }
+
 }
 
 [System.Serializable]

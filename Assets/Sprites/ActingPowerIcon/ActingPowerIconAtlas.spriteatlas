@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ActingPowerIconAtlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 4658e88bf5a471f4fba8f9cea031a2bd, type: 3}
+    - {fileID: 2800000, guid: d2be4c267f9eeb2419528f8e77ce4d5c, type: 3}
+    - {fileID: 2800000, guid: 69f132517a0ee034c959b2781121bb79, type: 3}
+    - {fileID: 2800000, guid: 3cbf1b3fa644b99439c32a38721b8392, type: 3}
+    - {fileID: 2800000, guid: 771179a6815a0f34e9fd747ca8f756eb, type: 3}
+    - {fileID: 2800000, guid: 8ec7b1b2f436194409d7c689901e5add, type: 3}
+    - {fileID: 2800000, guid: 92bf41927ae381f4392cc58cc301656d, type: 3}
+    - {fileID: 2800000, guid: 2e9b4d7d070cbbb42b3226568686754d, type: 3}
+    - {fileID: 2800000, guid: 189ae4472f7f8f34bbed42d43a223a90, type: 3}
+    - {fileID: 2800000, guid: dedbcaba2703fa741a40ccb2a6d8de58, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 69f132517a0ee034c959b2781121bb79, type: 3}
+  - {fileID: 21300000, guid: 92bf41927ae381f4392cc58cc301656d, type: 3}
+  - {fileID: 21300000, guid: 8ec7b1b2f436194409d7c689901e5add, type: 3}
+  - {fileID: 21300000, guid: d2be4c267f9eeb2419528f8e77ce4d5c, type: 3}
+  - {fileID: 21300000, guid: 771179a6815a0f34e9fd747ca8f756eb, type: 3}
+  - {fileID: 21300000, guid: 189ae4472f7f8f34bbed42d43a223a90, type: 3}
+  - {fileID: 21300000, guid: dedbcaba2703fa741a40ccb2a6d8de58, type: 3}
+  - {fileID: 21300000, guid: 4658e88bf5a471f4fba8f9cea031a2bd, type: 3}
+  - {fileID: 21300000, guid: 2e9b4d7d070cbbb42b3226568686754d, type: 3}
+  - {fileID: 21300000, guid: 3cbf1b3fa644b99439c32a38721b8392, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - ActingPowerIcon_3
+  - ActingPowerIcon_7
+  - ActingPowerIcon_6
+  - ActingPowerIcon_2
+  - ActingPowerIcon_5
+  - ActingPowerIcon_9
+  - ActingPowerIcon_10
+  - ActingPowerIcon_1
+  - ActingPowerIcon_8
+  - ActingPowerIcon_4
+  m_RenderDataMap: {}
+  m_Tag: ActingPowerIconAtlas
+  m_IsVariant: 0

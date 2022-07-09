@@ -22,13 +22,15 @@ public class PermanentPlayer
         StaticDataManager staticDataManager = Object.FindObjectOfType<StaticDataManager>();
 
         startInventory.Clear();
+        var defaultBehaviourDice = staticDataManager.GetBehaviourDice(x => x.isDefaultDice);
+        var actingPowerDice = staticDataManager.GetActionPowerDice(x => x.isDefaultDice);
 
-        startInventory.behaviourDiceList.Add(staticDataManager.GetBehaviourDice(x => x.index == 0));
-        startInventory.behaviourDiceList.Add(staticDataManager.GetBehaviourDice(x => x.index == 1));
-        startInventory.behaviourDiceList.Add(staticDataManager.GetBehaviourDice(x => x.index == 2));
 
-        startInventory.actionPowerDiceList.Add(staticDataManager.GetActionPowerDice(x => x.index == 0));
-        startInventory.actionPowerDiceList.Add(staticDataManager.GetActionPowerDice(x => x.index == 0));
-        startInventory.actionPowerDiceList.Add(staticDataManager.GetActionPowerDice(x => x.index == 0));
+        startInventory.currentDeckList.Add(new SessionDeck().SetBehaviourDice(defaultBehaviourDice)
+                                                            .SetActingPowerDice(actingPowerDice));
+        startInventory.currentDeckList.Add(new SessionDeck().SetBehaviourDice(defaultBehaviourDice)
+                                                            .SetActingPowerDice(actingPowerDice));
+        startInventory.currentDeckList.Add(new SessionDeck().SetBehaviourDice(defaultBehaviourDice)
+                                                            .SetActingPowerDice(actingPowerDice));
     }
 }

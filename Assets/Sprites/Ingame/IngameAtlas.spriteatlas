@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: IngameAtlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 8e705696720b6974a90d6f2a3b9a94d7, type: 3}
+    - {fileID: 2800000, guid: dbd054cc33b87c845b8668c6f2aa4bdc, type: 3}
+    - {fileID: 2800000, guid: 057f4b5180c937549ad93f845640add0, type: 3}
+    - {fileID: 2800000, guid: 08c9329093d7bc24f9c5e5c62dae5f78, type: 3}
+    - {fileID: 2800000, guid: 42f6fae196aa33842be5f1f185859ecb, type: 3}
+    - {fileID: 2800000, guid: 42dd354a5d174ea4ebc09e7ac42e6a04, type: 3}
+    - {fileID: 2800000, guid: 596ee7ffbcab67c48adf4fdc6af9990b, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 08c9329093d7bc24f9c5e5c62dae5f78, type: 3}
+  - {fileID: 21300000, guid: 057f4b5180c937549ad93f845640add0, type: 3}
+  - {fileID: 21300000, guid: 42f6fae196aa33842be5f1f185859ecb, type: 3}
+  - {fileID: 21300000, guid: 8e705696720b6974a90d6f2a3b9a94d7, type: 3}
+  - {fileID: 21300000, guid: 42dd354a5d174ea4ebc09e7ac42e6a04, type: 3}
+  - {fileID: 21300000, guid: dbd054cc33b87c845b8668c6f2aa4bdc, type: 3}
+  - {fileID: 21300000, guid: 596ee7ffbcab67c48adf4fdc6af9990b, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - down_button
+  - btn_roll
+  - gauge
+  - bg_forest
+  - stage_summary
+  - board
+  - stage_summary_character
+  m_RenderDataMap: {}
+  m_Tag: IngameAtlas
+  m_IsVariant: 0

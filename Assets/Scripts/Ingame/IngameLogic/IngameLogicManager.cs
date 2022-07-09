@@ -63,10 +63,12 @@ public class IngameLogicManager : MonoBehaviour
         turnInfo.diceResultList.Clear();
 
         monsterDataList.Clear();
-        for (int i=0; i<2; i++)
+
+        var dungeonData = staticDataManager.GetDungeon(x => x.index == dungeonIndex);
+        for (int i=0; i< dungeonData.monsterIndexList.Count; i++)
         {
             UnitStatusData monster = new UnitStatusData();
-            var monsterData = staticDataManager.GetMonster(x => x.index == i);
+            var monsterData = staticDataManager.GetMonster(x => x.index == dungeonData.monsterIndexList[i]);
 
             monster.isPlayer = false;
             monster.faction = 1;

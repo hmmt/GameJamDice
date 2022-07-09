@@ -14,15 +14,26 @@ public class SessionDungeon
     {
         nodes.Clear();
 
-        for(int i=0; i<5; i++)
+        for(int i=0; i<10; i++)
         {
-            nodes.Add(new SessionDungeonNode() {
-                id = i + 1,
-                pos = new Vector2(i, 0),
-                nextId = new List<int>() { i + 2 },
-                eventTypeIndex = 0,
-                level = i + 1
-            });
+            if(i < 9)
+            {
+                nodes.Add(new SessionDungeonNode()
+                {
+                    id = i,
+                    pos = new Vector2(i, 0),
+                    nextId = new List<int>() { i + 1 }
+                });
+            }
+            else
+            {
+                nodes.Add(new SessionDungeonNode()
+                {
+                    id = i,
+                    pos = new Vector2(i, 0),
+                    nextId = new List<int>() { }
+                });
+            }
         }
     }
 

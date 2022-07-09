@@ -99,17 +99,21 @@ public class UnitViewerManager : MonoBehaviour
         yield return null;
         try
         {
-            var actor = FindUnit(unit);
-            if(actor != null)
+            if(diceData.behaviourState == BehaviourState.offense ||
+                diceData.behaviourState == BehaviourState.poison)
             {
-                actor.SetMotionToAttack();
-            }
-            foreach (var result in resultList)
-            {
-                var viewer = FindUnit(result.unit);
-                if (viewer != null)
+                var actor = FindUnit(unit);
+                if (actor != null)
                 {
-                    damageEffectPool.PlayDamageEffect(result.damage, viewer.transform.position);
+                    actor.SetMotionToAttack();
+                }
+                foreach (var result in resultList)
+                {
+                    var viewer = FindUnit(result.unit);
+                    if (viewer != null)
+                    {
+                        damageEffectPool.PlayDamageEffect(result.damage, viewer.transform.position);
+                    }
                 }
             }
         }

@@ -12,11 +12,4 @@ public class SessionDungeonNode
     public Vector2 pos;
 
     public List<int> nextId = new List<int>();
-
-    /// <summary>
-    /// 어떤 이벤트인지(전투 or 기타 등등)
-    /// </summary>
-    public int eventTypeIndex;
-
-    public int level;
 }

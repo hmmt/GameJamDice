@@ -22,6 +22,9 @@ public class StaticDataManager : MonoBehaviour
     public S3MonsterData GetMonster(Func<S3MonsterData, bool> predicate)
         => GetS3Data<StaticS3MonsterData>().datas.Find((data) => predicate(data));
 
+    public S3DungeonData GetDungeon(Func<S3DungeonData, bool> predicate)
+        => GetS3Data<StaticS3DungeonData>().datas.Find((data) => predicate(data));
+
     public T GetS3Data<T>() where T : class
         => staticDataList.FirstOrDefault(data => data is T) as T;
 }

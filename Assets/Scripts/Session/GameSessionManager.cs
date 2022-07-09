@@ -38,7 +38,7 @@ public class GameSessionManager : MonoBehaviour
         stageLocationShower.SetCurrentStage(0)
                            .Init();
 
-        StartCoroutine(MoveToRoutine(1));
+        StartCoroutine(MoveToRoutine(0));
     }
 
     void MoveToNext()
@@ -77,7 +77,7 @@ public class GameSessionManager : MonoBehaviour
     private void EnterBattle()
     {
         battleLogic.AddActionOnEndBattle(OnEndBattle);
-        battleLogic.Init(player, 0);
+        battleLogic.Init(player, player.currentDugeonNodeId);
     }
 
     private void OnEndBattle()

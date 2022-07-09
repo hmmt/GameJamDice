@@ -25,6 +25,7 @@ public class UnitViewer : MonoBehaviour
 
     public void LoadPlayerSprites()
     {
+        rendererRoot.flipX = true;
         spriteSet = SpriteManager.instance.GetSpriteSet(0);
 
         StopAllCoroutines();
@@ -32,6 +33,7 @@ public class UnitViewer : MonoBehaviour
     }
     public void LoadMonsterSprites(int monsterIndex)
     {
+        rendererRoot.flipX = false;
         spriteSet = SpriteManager.instance.GetSpriteSet(monsterIndex + 1);
         StopAllCoroutines();
         SetMotionToIdle();

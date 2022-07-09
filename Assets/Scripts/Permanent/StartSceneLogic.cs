@@ -18,7 +18,9 @@ public class StartSceneLogic : MonoBehaviour
     }
     public void StartGame()
     {
-        
+        SessionPlayer.instance.StartGameSession(PermanentPlayer.instance);
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene("DungeonScene");
     }
 
     public void ResetGame()

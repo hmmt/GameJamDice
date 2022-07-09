@@ -18,15 +18,15 @@ public class IngameUIManager : MonoBehaviour
         //ingameLogicManager.AddActionOnEndEnemyTurn();   // 적 턴에서 어떤 주사위 결과가 나왔는지 팝업 띄우기 등의 작업
     }
 
+    public void Clear()
+    {
+
+    }
+
     public IngameUIManager SetPlayer(SessionPlayer player)
     {
         this.player = player;
         return this;
-    }
-
-    public void OnClickRollTheDice()
-    {
-        RollTheDice();
     }
 
     private void RollTheDice()
@@ -37,9 +37,19 @@ public class IngameUIManager : MonoBehaviour
             consequnceList.Add(new DiceConsequenceData(deck.behaviourDice.GetRandomBehaviourState(),
                                                        deck.actingPowerDice.GetRandomActingPower()));
         });
-        IngameLogicManager.instance.InvokeOnEndMyTurn(consequnceList);
+        //IngameLogicManager.instance.InvokeOnEndMyTurn(consequnceList);
         // onEndMyTurn 호출
     }
+    #region event trigger
+    public void OnClickRollTheDice()
+    {
+        RollTheDice();
+    }
 
-    
+    public void OnClickTestButton_battleSkip()
+    {
+        IngameLogicManager.instance.InvokeOnEndBattle();
+    }
+
+    #endregion
 }

@@ -7,7 +7,7 @@ public class IngameLogicManager : MonoBehaviour
 {
     public static IngameLogicManager instance { get; private set; }
 
-    [SerializeField] SessionPlayer sessionPlayer;
+    //[SerializeField] SessionPlayer sessionPlayer;
     [SerializeField] IngameUIManager ingameUIManager;
 
     event Action onStartBattle;
@@ -17,15 +17,22 @@ public class IngameLogicManager : MonoBehaviour
     event Action<List<DiceConsequenceData>> onStartEnemyTurn;
     event Action<List<DiceConsequenceData>> onEndEnemyTurn;
 
+    /// <summary>
+    /// true면 전투중
+    /// </summary>
+    private bool _inBattle = false;
+
     private void Awake()
     {
         instance = this;
     }
 
-    public void Init()
+    public void Init(SessionPlayer player, int dungeonIndex)
     {
-        ingameUIManager.SetPlayer(sessionPlayer);
+        ingameUIManager.SetPlayer(player);
+        _inBattle = true;
     }
+
 
     /// <summary>
     /// 전투가 시작 될 때
@@ -117,6 +124,9 @@ public class IngameLogicManager : MonoBehaviour
 
     public void InvokeOnEndBattle()
     {
+        if (!_inBattle)
+            return;
+        _inBattle = false;
         onEndBattle?.Invoke();
     }
 

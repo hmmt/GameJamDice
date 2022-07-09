@@ -21,7 +21,7 @@ public class PermanentPlayer
         // ¿”Ω√∑Œ FindObjectOfType æ∏
         StaticDataManager staticDataManager = Object.FindObjectOfType<StaticDataManager>();
 
-        startInventory.Clear();
+        //startInventory.Clear();
         var defaultBehaviourDice = staticDataManager.GetBehaviourDice(x => x.isDefaultDice);
         var actingPowerDice = staticDataManager.GetActionPowerDice(x => x.isDefaultDice);
 
@@ -32,5 +32,16 @@ public class PermanentPlayer
                                                             .SetActingPowerDice(actingPowerDice));
         startInventory.currentDeckList.Add(new SessionDeck().SetBehaviourDice(defaultBehaviourDice)
                                                             .SetActingPowerDice(actingPowerDice));
+    }
+
+
+    public void AddBehaviourDice(S3BehaviourDiceData behaviourDiceData)
+    {
+        startInventory.behaviourDiceList.Add(behaviourDiceData);
+    }
+
+    public void AddActingPowerDice(S3ActingPowerDiceData actingPowerDiceData)
+    {
+        startInventory.actingPowerDiceList.Add(actingPowerDiceData);
     }
 }

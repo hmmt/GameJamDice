@@ -9,7 +9,7 @@ public class IconViewer : MonoBehaviour
 
     public IconViewer SetActive(bool enable)
     {
-        gameObject.SetActive(enable);
+        imgIcon.gameObject.SetActive(enable);
         return this;
     }
 

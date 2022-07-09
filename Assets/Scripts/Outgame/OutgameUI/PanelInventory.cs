@@ -5,6 +5,7 @@ using UnityEngine;
 public class PanelInventory : PopupBase
 {
     [SerializeField] List<UIItemDiceSummary> diceSummaryList;
+    //[SerializeField] List
 
     public PanelInventory UpdateDiceSummaryList(List<SessionDeck> deckList)
     {

@@ -11,6 +11,6 @@ public class SessionInventory
 
     public void InitializeByPermanent(PermanentPlayer player)
     {
-        player.startInventory
+        //player.startInventory
     }
 }

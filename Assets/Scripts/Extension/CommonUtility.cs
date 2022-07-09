@@ -166,10 +166,9 @@ public static class CommonUtility
         }
         return path;
     }
+
     public static T ToEnum<T>(this string target)
         => (T)Enum.Parse(typeof(T), target);
-
-
 
     public static Color32 GetProductTagColorByValue(int value)
     {

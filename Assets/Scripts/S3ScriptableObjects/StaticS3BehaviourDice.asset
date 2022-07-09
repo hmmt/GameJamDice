@@ -20,8 +20,56 @@ MonoBehaviour:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes:
-    - Name: datas
-      Entry: 6
-      Data: 
-  textDataPath: 
+    SerializationNodes: []
+  textDataPath: StaticS3BehaviourDice
+  datas:
+  - index: 0
+    isDefaultDice: 1
+    diceCategory: 0
+    diceFace_1: 0
+    diceFace_2: 0
+    diceFace_3: 0
+    diceFace_4: 0
+    diceFace_5: 3
+    diceFace_6: 3
+    shopPrice: 0
+  - index: 1
+    isDefaultDice: 0
+    diceCategory: 1
+    diceFace_1: 0
+    diceFace_2: 0
+    diceFace_3: 0
+    diceFace_4: 0
+    diceFace_5: 0
+    diceFace_6: 0
+    shopPrice: 0
+  - index: 2
+    isDefaultDice: 0
+    diceCategory: 1
+    diceFace_1: 0
+    diceFace_2: 0
+    diceFace_3: 0
+    diceFace_4: 0
+    diceFace_5: 0
+    diceFace_6: 3
+    shopPrice: 0
+  - index: 3
+    isDefaultDice: 0
+    diceCategory: 1
+    diceFace_1: 0
+    diceFace_2: 0
+    diceFace_3: 0
+    diceFace_4: 0
+    diceFace_5: 0
+    diceFace_6: 2
+    shopPrice: 0
+  - index: 4
+    isDefaultDice: 0
+    diceCategory: 1
+    diceFace_1: 0
+    diceFace_2: 0
+    diceFace_3: 0
+    diceFace_4: 0
+    diceFace_5: 0
+    diceFace_6: 1
+    shopPrice: 0

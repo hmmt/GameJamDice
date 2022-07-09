@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StaticS3DataBase<T> : SerializedScriptableObject
+public class StaticS3DataBase<T> : StaticS3DataBase
     where T : S3DataBase, new()
 {
     [SerializeField] protected string textDataPath;
     [ReadOnly] public List<T> datas;
 
     [Button]
-    public void LoadTextData()
+    public override void LoadTextData()
     {
         var textAsset = Resources.Load<TextAsset>($"S3Datas/{textDataPath}");
         var lines = textAsset.text.Split('\n');
@@ -25,5 +25,9 @@ public class StaticS3DataBase<T> : SerializedScriptableObject
             datas.Add(data);
         }
     }
+}
 
+public abstract class StaticS3DataBase : SerializedScriptableObject 
+{
+    public abstract void LoadTextData();
 }

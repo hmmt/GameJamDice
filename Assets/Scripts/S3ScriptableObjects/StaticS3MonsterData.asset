@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25f15d342f92f7940977292442f86238, type: 3}
+  m_Name: StaticS3MonsterData
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes: []
+  textDataPath: StaticS3MonsterData
+  datas:
+  - index: 0
+    monsterName: "\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD"
+    hitpoint: 30
+    behaviourDice_1: 1
+    behaviourDice_2: 601
+    behaviourDice_3: -1
+    behaviourDice_4: -1
+    behaviourDice_5: -1
+    actingPowerDice_1: 2
+    actingPowerDice_2: 322
+    actingPowerDice_3: -1
+    actingPowerDice_4: -1
+    actingPowerDice_5: -1
+  - index: 1
+    monsterName: "\uFFFD\uFFFD\uFFFD\uFFFD"
+    hitpoint: 50
+    behaviourDice_1: 869
+    behaviourDice_2: 1152
+    behaviourDice_3: -1
+    behaviourDice_4: -1
+    behaviourDice_5: -1
+    actingPowerDice_1: 2562
+    actingPowerDice_2: 662
+    actingPowerDice_3: -1
+    actingPowerDice_4: -1
+    actingPowerDice_5: -1

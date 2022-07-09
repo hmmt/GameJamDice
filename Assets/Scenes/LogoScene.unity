@@ -170,6 +170,7 @@ MonoBehaviour:
   staticDataList:
   - {fileID: 11400000, guid: dfe9ea4512316fb4f856e9de1413b53d, type: 2}
   - {fileID: 11400000, guid: 08a19abab8f34034d8f27c76c25e239c, type: 2}
+  - {fileID: 11400000, guid: 85eff81a60b4dac468b7bcd46fa534f7, type: 2}
 --- !u!1 &1860522415
 GameObject:
   m_ObjectHideFlags: 0

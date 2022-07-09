@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class IngameUtility
 {
-    public static BehaviourState GetRandomBehaviourState(this S3BehaviourDice s3Dice)
+    public static BehaviourState GetRandomBehaviourState(this S3BehaviourDiceData s3Dice)
     {
         var diceCount = 6;
         var randomValue = Random.Range(0, diceCount);
@@ -20,7 +20,7 @@ public static class IngameUtility
         }
     }
 
-    public static int GetRandomActingPower(this S3ActingPowerDice s3Dice)
+    public static int GetRandomActingPower(this S3ActingPowerDiceData s3Dice)
     {
         var diceCount = 6;
         var randomValue = Random.Range(0, diceCount);

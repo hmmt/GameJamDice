@@ -5,16 +5,17 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "StaticS3ActingPowerDice", menuName = "StaticData/Create StaticS3ActingPowerDice")]
 [Serializable]
-public class StaticS3ActingPowerDice : StaticS3DataBase<S3ActingPowerDice>
+public class StaticS3ActingPowerDiceData : StaticS3DataBase<S3ActingPowerDiceData>
 {
 
 }
 
 [Serializable]
-public class S3ActingPowerDice : S3DataBase
+public class S3ActingPowerDiceData : S3DataBase
 {
     public int index;
     public bool isDefaultDice;
+    public DiceCategory diceCategory;
     public int diceFace_1;
     public int diceFace_2;
     public int diceFace_3;
@@ -28,6 +29,7 @@ public class S3ActingPowerDice : S3DataBase
         var i = 0;
         index = int.Parse(data[i++]);
         isDefaultDice = bool.Parse(data[i++]);
+        diceCategory = data[i++].ToEnum<DiceCategory>();
         diceFace_1 = int.Parse(data[i++]);
         diceFace_2 = int.Parse(data[i++]);
         diceFace_3 = int.Parse(data[i++]);

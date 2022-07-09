@@ -27,8 +27,8 @@ public class PermanentPlayer
         startInventory.behaviourDiceList.Add(staticDataManager.GetBehaviourDice(x => x.index == 1));
         startInventory.behaviourDiceList.Add(staticDataManager.GetBehaviourDice(x => x.index == 2));
 
-        startInventory.actionPowerDiceList.Add(staticDataManager.GetS3Data<StaticS3ActingPowerDice>().datas.Find(x => x.index == 0));
-        startInventory.actionPowerDiceList.Add(staticDataManager.GetS3Data<StaticS3ActingPowerDice>().datas.Find(x => x.index == 0));
-        startInventory.actionPowerDiceList.Add(staticDataManager.GetS3Data<StaticS3ActingPowerDice>().datas.Find(x => x.index == 0));
+        startInventory.actionPowerDiceList.Add(staticDataManager.GetS3Data<StaticS3ActingPowerDiceData>().datas.Find(x => x.index == 0));
+        startInventory.actionPowerDiceList.Add(staticDataManager.GetS3Data<StaticS3ActingPowerDiceData>().datas.Find(x => x.index == 0));
+        startInventory.actionPowerDiceList.Add(staticDataManager.GetS3Data<StaticS3ActingPowerDiceData>().datas.Find(x => x.index == 0));
     }
 }

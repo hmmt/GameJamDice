@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class SessionDeck
 {
-    S3BehaviourDice _behaviourDice;
-    S3ActingPowerDice _actingPowerDice;
+    S3BehaviourDiceData _behaviourDice;
+    S3ActingPowerDiceData _actingPowerDice;
 
-    public S3BehaviourDice behaviourDice => _behaviourDice;
-    public S3ActingPowerDice actingPowerDice => _actingPowerDice;
+    public S3BehaviourDiceData behaviourDice => _behaviourDice;
+    public S3ActingPowerDiceData actingPowerDice => _actingPowerDice;
 
-    public SessionDeck SetBehaviourDice(S3BehaviourDice behaviourDice)
+    public SessionDeck SetBehaviourDice(S3BehaviourDiceData behaviourDice)
     {
         this._behaviourDice = behaviourDice;
         return this;
     }
 
-    public SessionDeck SetActingPowerDice(S3ActingPowerDice actingPowerDice)
+    public SessionDeck SetActingPowerDice(S3ActingPowerDiceData actingPowerDice)
     {
         this._actingPowerDice = actingPowerDice;
         return this;

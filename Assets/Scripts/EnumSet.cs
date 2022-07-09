@@ -4,6 +4,7 @@ using UnityEngine;
 
 public enum BehaviourState
 {
+    none,
     offense,
     lightning,
     poison,
@@ -11,10 +12,6 @@ public enum BehaviourState
     recovery
 }
 
-public enum ActingPowerState
-{
-
-}
 
 public enum DiceCategory
 {

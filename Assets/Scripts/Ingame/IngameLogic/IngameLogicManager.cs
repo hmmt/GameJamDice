@@ -29,8 +29,9 @@ public class IngameLogicManager : MonoBehaviour
 
     public void Init(SessionPlayer player, int dungeonIndex)
     {
-        ingameUIManager.SetPlayer(player);
         _inBattle = true;
+        ingameUIManager.SetPlayer(player)
+                       .Init(this);
     }
 
 

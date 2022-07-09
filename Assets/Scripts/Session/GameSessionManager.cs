@@ -12,6 +12,7 @@ public class GameSessionManager : MonoBehaviour
     [SerializeField] IngameLogicManager battleLogic;
     [SerializeField] UnitViewerManager unitManager;
     [SerializeField] FieldMapViewer fieldMap;
+    [SerializeField] HUDStageLocationShower stageLocationShower;
 
     SessionPlayer player;
 
@@ -27,13 +28,13 @@ public class GameSessionManager : MonoBehaviour
         Initialize();
     }
 
-
-
     void Initialize()
     {
         // ´ëÃæ ¸Ê ºä ¹× ui ¼¼ÆÃ
 
         unitManager.InitializePlayerUnit(player.unitData);
+        stageLocationShower.SetCurrentStage(0)
+                           .Init();
 
         StartCoroutine(MoveToRoutine(1));
     }
@@ -57,7 +58,11 @@ public class GameSessionManager : MonoBehaviour
     {
         unitManager.SetToMoveState();
         fieldMap.SetToMoveState();
-        yield return new WaitForSeconds(2);
+
+        stageLocationShower.SetCurrentStage(player.currentDugeonNodeId)
+                           .MoveToTargetStage(nextNode, 2f);
+        yield return CommonUtility.GetYieldSec(2f);
+
 
         unitManager.SetToIdleState();
         fieldMap.SetToStopState();

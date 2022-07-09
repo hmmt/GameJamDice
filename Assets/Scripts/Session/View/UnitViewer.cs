@@ -6,7 +6,7 @@ public class UnitViewer : MonoBehaviour
 {
     [SerializeField] GameObject rendererRoot;
 
-    UnitStatusData data;
+    public UnitStatusData data { private set; get; }
 
     public void SetIngameUnitData(UnitStatusData data)
     {

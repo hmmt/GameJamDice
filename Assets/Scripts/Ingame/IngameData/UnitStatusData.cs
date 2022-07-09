@@ -16,12 +16,17 @@ public class UnitStatusData
     public int hp;
     public int shield;
 
+    public bool isPlayer = false;
+    public int faction = 0;
+
     /// <summary>
     /// 일단 몬스터 전용
     /// </summary>
     public List<SessionDeck> deck = new List<SessionDeck>();
 
     public List<UnitBuf> bufs = new List<UnitBuf>();
+
+    public bool isDead => hp <= 0;
 
     public void ClearForEndBattle()
     {

@@ -7,6 +7,8 @@ using UnityEngine;
 /// </summary>
 public class UnitViewerManager : MonoBehaviour
 {
+    [SerializeField] HUDDamageEffect damageEffectPrefab;
+
     [SerializeField] UnitViewer unitPrefab;
 
     [SerializeField] Transform playerPosition;
@@ -47,6 +49,12 @@ public class UnitViewerManager : MonoBehaviour
         }
     }
 
+    public void InitBattle(IngameLogicManager logic)
+    {
+        //logic.InvokeOnUseDice()
+        logic.AddActionOnUseDice(OnUseDice);
+    }
+
     public void ClearMonsters()
     {
         foreach(var monster in monsterUnits)
@@ -54,6 +62,16 @@ public class UnitViewerManager : MonoBehaviour
             Destroy(monster.gameObject);
         }
         monsterUnits.Clear();
+    }
+
+    private UnitViewer FindUnit(UnitStatusData unit)
+    {
+        if(playerUnit.data == unit)
+        {
+            return playerUnit;
+        }
+
+        return monsterUnits.Find(x => x.data == unit);
     }
 
     public void SetToMoveState()
@@ -65,4 +83,14 @@ public class UnitViewerManager : MonoBehaviour
     {
         playerUnit.SetMotionToIdle();
     }
+
+    #region callback
+    private void OnUseDice(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
+    {
+        foreach(var result in resultList)
+        {
+
+        }
+    }
+    #endregion
 }

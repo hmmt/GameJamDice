@@ -16,7 +16,8 @@ public class IngameUIManager : MonoBehaviour
 
     public void Init(IngameLogicManager ingameLogicManager)
     {
-        rollButton.gameObject.SetActive(false);
+        if (rollButton != null)
+            rollButton.gameObject.SetActive(false);
 
         foreach(var rolledInfo in rolledInfos)
         {
@@ -29,8 +30,9 @@ public class IngameUIManager : MonoBehaviour
         //ingameLogicManager.AddActionOnEndBattle();      // 전투 종료시 보상 팝업 띄우기 등의 작업
 
 
-        ingameLogicManager.AddActionOnStartMyTurn(OnStartMyTurn);    // 내 턴이 시작될 때 내 턴 시작 타이틀을 띄우는 등의 작업
-        ingameLogicManager.AddActionOnRollCompleteMyTurn(OnRollCompleteMyTurn);
+        ingameLogicManager.AddActionOnStartTurn(OnStartTurn);    // 턴이 시작될 때 턴 시작 타이틀을 띄우는 등의 작업
+        ingameLogicManager.AddActionOnRollCompleteTurn(OnRollCompleteTurn); // 주사위 굴리는 연출 작업
+        ingameLogicManager.AddActionOnEndTurn(OnEndTurn); // 어떤 주사위 결과가 나왔는지 팝업 띄우기 등의 작업
         //ingameLogicManager.AddActionOnEndMyTurn();      // 내 턴에서 어떤 주사위 결과가 나왔는지 팝업 띄우기 등의 작업
         //ingameLogicManager.AddActionOnStartEnemyTurn(); // 적 턴이 시작될 때 적 턴 시작 타이틀을 띄우는 등의 작업
         //ingameLogicManager.AddActionOnEndEnemyTurn();   // 적 턴에서 어떤 주사위 결과가 나왔는지 팝업 띄우기 등의 작업
@@ -75,13 +77,15 @@ public class IngameUIManager : MonoBehaviour
     }
 
     #region callback
-    private void OnStartMyTurn()
+    private void OnStartTurn(UnitStatusData unit)
     {
-        rollButton.gameObject.SetActive(true);
+        if (rollButton != null)
+            rollButton.gameObject.SetActive(true);
     }
-    private void OnRollCompleteMyTurn(List<DiceConsequenceData> list)
+    private void OnRollCompleteTurn(UnitStatusData unit, List<DiceConsequenceData> list)
     {
-        rollButton.gameObject.SetActive(false);
+        if (rollButton != null)
+            rollButton.gameObject.SetActive(false);
         StartCoroutine(ShowRollDiceList(list, OnCompleteMyRollEffect));
     }
     private void OnCompleteMyRollEffect()
@@ -89,13 +93,14 @@ public class IngameUIManager : MonoBehaviour
 
     }
 
-    private void OnStartEnemyTurn()
+    private void OnEndTurn(UnitStatusData unit)
     {
         //rollButton.gameObject.SetActive(true);
     }
     private void OnRollCompleteEnemyTurn(UnitStatusData unit, List<DiceConsequenceData> list)
     {
-        rollButton.gameObject.SetActive(false);
+        if (rollButton != null)
+            rollButton.gameObject.SetActive(false);
         StartCoroutine(ShowRollDiceList(list, OnCompleteEnemyRollEffect));
     }
     private void OnCompleteEnemyRollEffect()

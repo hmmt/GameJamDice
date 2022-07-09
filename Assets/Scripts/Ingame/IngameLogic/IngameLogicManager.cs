@@ -24,7 +24,8 @@ public class IngameLogicManager : MonoBehaviour
 
     public void Init()
     {
-        ingameUIManager.SetPlayer(sessionPlayer);
+        ingameUIManager.SetPlayer(sessionPlayer)
+                       .Init(this);
     }
 
     /// <summary>

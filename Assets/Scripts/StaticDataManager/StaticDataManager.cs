@@ -13,8 +13,8 @@ public class StaticDataManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public S3BehaviourDice GetBehaviourDice(Func<S3BehaviourDice, bool> predicate)
-        => GetS3Data<StaticS3BehaviourDice>().datas.Find((data) => predicate(data));
+    public S3BehaviourDiceData GetBehaviourDice(Func<S3BehaviourDiceData, bool> predicate)
+        => GetS3Data<StaticS3BehaviourDiceData>().datas.Find((data) => predicate(data));
 
     public T GetS3Data<T>() where T : class
         => staticDataList.FirstOrDefault(data => data is T) as T;

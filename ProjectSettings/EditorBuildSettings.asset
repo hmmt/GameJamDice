@@ -12,6 +12,6 @@ EditorBuildSettings:
     path: Assets/Scenes/LogoScene.unity
     guid: b25b3a1d3aeda8f4b85a850fc268710a
   - enabled: 1
-    path: Assets/Scenes/WorldScene.unity
+    path: Assets/Scenes/DungeonScene.unity
     guid: fc015698bd3a56140bd4adeb5c877e59
   m_configObjects: {}

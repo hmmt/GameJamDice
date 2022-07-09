@@ -5,13 +5,13 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "StaticS3BehaviourDice", menuName = "StaticData/Create StaticS3BehaviourDice")]
 [Serializable]
-public class StaticS3BehaviourDice : StaticS3DataBase<S3BehaviourDice>
+public class StaticS3BehaviourDiceData : StaticS3DataBase<S3BehaviourDiceData>
 {
 
 }
 
 [Serializable]
-public class S3BehaviourDice : S3DataBase
+public class S3BehaviourDiceData : S3DataBase
 {
     public int index;
     public bool isDefaultDice;

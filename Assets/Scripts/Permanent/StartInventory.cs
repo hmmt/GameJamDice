@@ -10,8 +10,8 @@ using UnityEngine;
 public class StartInventory
 {
     // ±Õ¬˙¿∏¥œ ¿œ¥‹ public
-    public List<S3BehaviourDice> behaviourDiceList = new List<S3BehaviourDice>();
-    public List<S3ActingPowerDice> actionPowerDiceList = new List<S3ActingPowerDice>();
+    public List<S3BehaviourDiceData> behaviourDiceList = new List<S3BehaviourDiceData>();
+    public List<S3ActingPowerDiceData> actionPowerDiceList = new List<S3ActingPowerDiceData>();
 
     public void Clear()
     {

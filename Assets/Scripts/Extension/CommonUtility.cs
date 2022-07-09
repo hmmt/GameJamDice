@@ -207,6 +207,9 @@ public static class CommonUtility
         }
     }
 
+    public static void SetSprite(this SpriteRenderer spriteRenderer, Sprite sprite)
+        => spriteRenderer.sprite = sprite;
+
 
     public static Transform GetRootDirectChild(this RectTransform rectTransform)
         => rectTransform.GetChild(0);

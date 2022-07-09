@@ -35,4 +35,13 @@ public class DamageEffectPool : MonoBehaviour
         damageEffectPool.TrySpawn(ref prefab, tfParent ?? transform);
         return prefab.GetComponent<HUDDamageEffect>();
     }
+
+    public void PlayDamageEffect(int damage, Vector3 pos)
+    {
+        var effect = SpawnDamageEffect();
+        effect.SetDamage(damage)
+              .SetText(damage.ToString())
+              .SetPosition(pos)
+              .PlayEffect(() => damageEffectPool.Despawn(effect.gameObject));
+    }
 }

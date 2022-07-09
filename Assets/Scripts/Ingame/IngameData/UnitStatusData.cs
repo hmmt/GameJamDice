@@ -33,6 +33,12 @@ public class UnitStatusData
         shield = 0;
         bufs.Clear();
     }
+
+    public void TakeDamage(int damage)
+    {
+        hp -= damage;
+        Debug.Log(string.Format("hp : {0}, damage : {1}, player : {2}", hp, damage, isPlayer));
+    }
 }
 
 public class UnitBuf

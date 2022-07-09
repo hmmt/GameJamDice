@@ -12,7 +12,7 @@ public class IngameUIManager : MonoBehaviour
     [SerializeField] UIButton rollButton;
     [SerializeField] IngameRolledInfo[] rolledInfos;
 
-    private bool waiting = false;
+    public bool waiting { private set; get; }
 
     public void Init(IngameLogicManager ingameLogicManager)
     {
@@ -23,8 +23,6 @@ public class IngameUIManager : MonoBehaviour
         {
             rolledInfo.SetToEmpty();
         }
-
-        ingameLogicManager.isEffectPhase += () => waiting;
 
         //ingameLogicManager.AddActionOnStartBattle();    // 전투 시작시 전투 시작 뷰어 띄우기 등의 작업
         //ingameLogicManager.AddActionOnEndBattle();      // 전투 종료시 보상 팝업 띄우기 등의 작업
@@ -58,8 +56,11 @@ public class IngameUIManager : MonoBehaviour
 
         yield return null;
         // 대충 굴리는 연출
+        waiting = true;
 
         yield return null;
+
+        waiting = false;
 
         // 연출 완료
         for (int i = 0; i < rolledInfos.Length; i++)
@@ -96,16 +97,6 @@ public class IngameUIManager : MonoBehaviour
     private void OnEndTurn(UnitStatusData unit)
     {
         //rollButton.gameObject.SetActive(true);
-    }
-    private void OnRollCompleteEnemyTurn(UnitStatusData unit, List<DiceConsequenceData> list)
-    {
-        if (rollButton != null)
-            rollButton.gameObject.SetActive(false);
-        StartCoroutine(ShowRollDiceList(list, OnCompleteEnemyRollEffect));
-    }
-    private void OnCompleteEnemyRollEffect()
-    {
-
     }
     #endregion
 

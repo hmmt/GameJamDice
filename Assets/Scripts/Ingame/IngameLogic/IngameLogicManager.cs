@@ -117,9 +117,7 @@ public class IngameLogicManager : MonoBehaviour
 
     bool WaitEffectEnd()
     {
-        if (isEffectPhase == null)
-            return false;
-        return isEffectPhase.Invoke();
+        return ingameUIManager.waiting || unitViewerManager.waiting;
     }
 
     private void ResetTurnOrderQueue()
@@ -147,6 +145,7 @@ public class IngameLogicManager : MonoBehaviour
         {
             if (!unit.isDead)
             {
+                alldead = false;
                 break;
             }
         }
@@ -183,9 +182,20 @@ public class IngameLogicManager : MonoBehaviour
         turnInfo = new TurnInfo();
         turnInfo.unit = turnOrderQueue.Dequeue();
 
+
+        if(!turnInfo.unit.isPlayer)
+        {
+            // 플레이어가 아니면 자동 굴리기
+            turnInfo.diceRolled = true;
+        }
+
+        Debug.Log(1);
         InvokeOnStartTurn(turnInfo.unit);
+        Debug.Log(2);
         while (!turnInfo.diceRolled)
             yield return null;
+
+        Debug.Log(3);
 
 
         // 주사위 굴리기
@@ -202,10 +212,11 @@ public class IngameLogicManager : MonoBehaviour
 
         InvokeOnCompleteRollDice(turnInfo.unit, consequnceList);
 
+        Debug.Log(4);
         // 주사위 굴리는 연출 대기
         while (WaitEffectEnd())
             yield return null;
-
+        Debug.Log(5);
         while (turnInfo.rolledDiceIndex < turnInfo.diceResultList.Count)
         {
             var result = turnInfo.diceResultList[turnInfo.rolledDiceIndex];
@@ -228,24 +239,31 @@ public class IngameLogicManager : MonoBehaviour
                 // 그 외에는 바로 사용
                 actionResultList = UseDice(turnInfo.rolledDiceIndex, null);
             }
+            Debug.Log(6 + "-" + turnInfo.rolledDiceIndex);
             // 주사위 사용 대기
             while (!turnInfo.rolledDiceUsed)
                 yield return null;
+
+            Debug.Log(7 + "-" + turnInfo.rolledDiceIndex);
 
             InvokeOnUseDice(turnInfo.unit, result, actionResultList);
             while (WaitEffectEnd())
                 yield return null;
 
             turnInfo.rolledDiceIndex++;
+            Debug.Log(8 + "-" + turnInfo.rolledDiceIndex);
         }
 
+        Debug.Log(8);
         InvokeOnEndTurn(turnInfo.unit);
+        Debug.Log(9);
 
 
         if (CheckEndBattle())
         {
             yield break;
         }
+        Debug.Log(10);
         NextUnitTurn();
     }
 
@@ -266,7 +284,7 @@ public class IngameLogicManager : MonoBehaviour
         {
             var actor = turnInfo.unit;
             var diceResult = turnInfo.diceResultList[slotIndex];
-            if (unit != null)
+            if (unit == null)
             {
                 switch (diceResult.behaviourState)
                 {
@@ -307,7 +325,8 @@ public class IngameLogicManager : MonoBehaviour
             {
                 case BehaviourState.offense:
                     // 횟수로 바꿔야 함
-                    unit.hp -= diceResult.actingPower;
+                    //unit.hp -= diceResult.actingPower;
+                    unit.TakeDamage(diceResult.actingPower);
                     resultList.Add(new ActionResultData(unit, diceResult.actingPower));
                     break;
                 case BehaviourState.defense:
@@ -318,12 +337,13 @@ public class IngameLogicManager : MonoBehaviour
                     break;
                 case BehaviourState.poison:
                     // 횟수로 바꿔야 함
-                    unit.hp -= diceResult.actingPower;
+                    unit.TakeDamage(diceResult.actingPower);
                     resultList.Add(new ActionResultData(unit, diceResult.actingPower));
                     break;
                 case BehaviourState.recovery:
                     break;
             }
+            turnInfo.rolledDiceUsed = true;
             return resultList;
         }
         return new List<ActionResultData>();
@@ -406,7 +426,7 @@ public class IngameLogicManager : MonoBehaviour
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnRollCompleteTurn(Action<UnitStatusData, DiceConsequenceData> callback)
+    public IngameLogicManager RemoveActionOnRollCompleteTurn(Action<UnitStatusData, DiceConsequenceData, List<ActionResultData>> callback)
     {
         onUseDice -= callback;
         return this;

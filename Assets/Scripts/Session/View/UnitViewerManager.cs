@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 public class UnitViewerManager : MonoBehaviour
 {
-    [SerializeField] HUDDamageEffect damageEffectPrefab;
+    [SerializeField] DamageEffectPool damageEffectPool;
 
     [SerializeField] UnitViewer unitPrefab;
 
@@ -17,6 +17,7 @@ public class UnitViewerManager : MonoBehaviour
     UnitViewer playerUnit;
     List<UnitViewer> monsterUnits = new List<UnitViewer>();
 
+    public bool waiting { private set; get; }
 
     /// <summary>
     /// 한 번만 호출할것
@@ -87,10 +88,32 @@ public class UnitViewerManager : MonoBehaviour
     #region callback
     private void OnUseDice(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
     {
-        foreach(var result in resultList)
+        StartCoroutine(PlayDamageEffect(unit, diceData, resultList));
+    }
+
+    IEnumerator PlayDamageEffect(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
+    {
+        waiting = true;
+        yield return null;
+        try
+        {
+            foreach (var result in resultList)
+            {
+                var viewer = FindUnit(result.unit);
+                if (viewer != null)
+                {
+                    damageEffectPool.PlayDamageEffect(result.damage, viewer.transform.position);
+                }
+            }
+        }
+        catch(System.Exception e)
         {
 
         }
+
+        yield return new WaitForSeconds(1);
+        waiting = false;
+
     }
     #endregion
 }

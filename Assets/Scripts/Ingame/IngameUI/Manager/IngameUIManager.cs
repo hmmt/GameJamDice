@@ -9,7 +9,7 @@ public class IngameUIManager : MonoBehaviour
     SessionPlayer player;
 
     [Header("UI inspector")]
-    [SerializeField] Button rollButton;
+    [SerializeField] UIButton rollButton;
     [SerializeField] IngameRolledInfo[] rolledInfos;
 
     private bool waiting = false;

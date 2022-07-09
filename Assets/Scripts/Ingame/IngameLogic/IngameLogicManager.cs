@@ -13,13 +13,33 @@ public class IngameLogicManager : MonoBehaviour
 
     event Action onStartBattle;
     event Action onEndBattle;
-    event Action<List<DiceConsequenceData>> onStartMyTurn;
-    event Action<List<DiceConsequenceData>> onEndMyTurn;
-    event Action<List<DiceConsequenceData>> onStartEnemyTurn;
-    event Action<List<DiceConsequenceData>> onEndEnemyTurn;
+
+
+    event Action onStartMyTurn;
+    event Action<List<DiceConsequenceData>> onRollCompleteMyTurn;
+    event Action<int> onReadyToUseDice;
+    event Action onEndMyTurn;
+
+    event Action<UnitStatusData> onStartEnemyTurn;
+    event Action<UnitStatusData, List<DiceConsequenceData>> onRollCompleteEnemyTurn;
+    event Action<UnitStatusData> onEndEnemyTurn;
+
+    /// <summary>
+    /// 연출중인지 체크
+    /// </summary>
+    public event Func<bool> isEffectPhase;
 
     UnitStatusData playerData = new UnitStatusData();
     List<UnitStatusData> monsterDataList = new List<UnitStatusData>();
+
+
+    #region phase
+    bool rollDiceClicked;
+
+    List<DiceConsequenceData> currentDiceResultList = new List<DiceConsequenceData>();
+    int currentRolledDiceIndex = 0;
+    bool currentRolledDiceUsed = false;
+    #endregion
 
     /// <summary>
     /// true면 전투중
@@ -35,6 +55,8 @@ public class IngameLogicManager : MonoBehaviour
     {
         StaticDataManager staticDataManager = FindObjectOfType<StaticDataManager>();
 
+        currentDiceResultList.Clear();
+
         monsterDataList.Clear();
         for (int i=0; i<2; i++)
         {
@@ -48,11 +70,14 @@ public class IngameLogicManager : MonoBehaviour
         }
 
         playerData = player.unitData;
+        playerData.deck.Clear();
+        playerData.deck.AddRange(player.deck);
 
-        unitViewerManager.InitializeMonsterUnits(monsterDataList);
+        isEffectPhase = null;
 
         inBattle = true;
 
+        unitViewerManager.InitializeMonsterUnits(monsterDataList);
         ingameUIManager.SetPlayer(player)
                        .Init(this);
     }
@@ -75,7 +100,7 @@ public class IngameLogicManager : MonoBehaviour
 
         return output;
     }
-
+    #region event
 
     /// <summary>
     /// 전투가 시작 될 때
@@ -107,65 +132,129 @@ public class IngameLogicManager : MonoBehaviour
         return this;
     }
 
-    /// <param name="callback"> 현재 적용 중인 내 상태 </param>
-    public IngameLogicManager AddActionOnStartMyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager AddActionOnStartMyTurn(Action callback)
     {
         onStartMyTurn += callback;
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnStartMyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager RemoveActionOnStartMyTurn(Action callback)
     {
         onStartMyTurn -= callback;
         return this;
     }
 
-    /// <param name="callback"> 내가 주사위를 돌린 결과 값 </param>
-    public IngameLogicManager AddActionOnEndMyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager AddActionOnRollCompleteMyTurn(Action<List<DiceConsequenceData>> callback)
     {
-        onEndEnemyTurn += callback;
+        onRollCompleteMyTurn += callback;
+        return this;
+    }
+
+    public IngameLogicManager RemoveActionOnRollCompleteMyTurn(Action<List<DiceConsequenceData>> callback)
+    {
+        onRollCompleteMyTurn -= callback;
+        return this;
+    }
+
+    public IngameLogicManager AddActionOnEndMyTurn(Action callback)
+    {
+        onEndMyTurn += callback;
         return this;
     }
 
 
-    public IngameLogicManager RemoveActionOnEndMyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager RemoveActionOnEndMyTurn(Action callback)
     {
         onEndMyTurn -= callback;
         return this;
     }
 
     /// <param name="callback"> 현재 적용 중인 적의 상태  </param>
-    public IngameLogicManager AddActionOnStartEnemyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager AddActionOnStartEnemyTurn(Action<UnitStatusData> callback)
     {
         onStartEnemyTurn += callback;
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnStartEnemyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager RemoveActionOnStartEnemyTurn(Action<UnitStatusData> callback)
     {
         onStartEnemyTurn -= callback;
         return this;
     }
 
     /// <param name="callback"> 적이 주사위를 돌린 결과 값 </param>
-    public IngameLogicManager AddActionOnEndEnemyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager AddActionOnEndEnemyTurn(Action<UnitStatusData> callback)
     {
         onEndEnemyTurn += callback;
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnEndEnemyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager RemoveActionOnEndEnemyTurn(Action<UnitStatusData> callback)
     {
         onEndEnemyTurn -= callback;
         return this;
     }
+    #endregion
 
-    public void InvokeOnStartBattle()
+    #region logic
+
+    bool CheckWait()
     {
-        onStartBattle?.Invoke();
+        if (isEffectPhase == null)
+            return false;
+        return isEffectPhase.Invoke();
     }
 
-    public void InvokeOnEndBattle()
+    IEnumerator RollDiceRoutine()
+    {
+        yield return null;
+
+        var consequnceList = new List<DiceConsequenceData>();
+        playerData.deck.ForEach(deck =>
+        {
+            consequnceList.Add(new DiceConsequenceData(deck.behaviourDice.GetRandomBehaviourState(),
+                                                       deck.actingPowerDice.GetRandomActingPower()));
+        });
+
+        currentDiceResultList.Clear();
+        currentDiceResultList.AddRange(consequnceList);
+        currentRolledDiceIndex = 0;
+
+        onRollCompleteMyTurn?.Invoke(consequnceList);
+
+        // 굴리는 연출 대기
+        while (CheckWait())
+            yield return null;
+
+        while (currentRolledDiceIndex < currentDiceResultList.Count)
+        {
+            var result = currentDiceResultList[currentRolledDiceIndex];
+
+            currentRolledDiceUsed = false;
+
+            OnReadyToUseDice(currentRolledDiceIndex);
+            while (!currentRolledDiceUsed)
+                yield return null;
+
+            while (CheckWait())
+                yield return null;
+
+            currentRolledDiceIndex++;
+        }
+    }
+
+    public void RollMyDice()
+    {
+        StartCoroutine(RollDiceRoutine());
+    }
+
+    public void UseDice(int slotIndex)
+    {
+
+    }
+
+
+    public void EndBattle()
     {
         if (!inBattle)
             return;
@@ -173,24 +262,35 @@ public class IngameLogicManager : MonoBehaviour
         unitViewerManager.ClearMonsters();
         onEndBattle?.Invoke();
     }
+    #endregion
 
-    public void InvokeOnStartMyTurn(List<DiceConsequenceData> sessionDecks)
+    public void OnReadyToUseDice(int rolledDiceIndex)
     {
-        onStartMyTurn?.Invoke(sessionDecks);
+        onReadyToUseDice?.Invoke(rolledDiceIndex);
+    }
+
+    public void InvokeOnStartBattle()
+    {
+        onStartBattle?.Invoke();
+    }
+
+    public void InvokeOnStartMyTurn()
+    {
+        onStartMyTurn?.Invoke();
     }
 
     public void InvokeOnEndMyTurn(List<DiceConsequenceData> sessionDecks)
     {
-        onEndMyTurn?.Invoke(sessionDecks);
+        //onEndMyTurn?.Invoke(sessionDecks);
     }
 
     public void InvokeOnStartEnemyTurn(List<DiceConsequenceData> sessionDecks)
     {
-        onStartEnemyTurn?.Invoke(sessionDecks);
+        //onStartEnemyTurn?.Invoke(sessionDecks);
     }
 
     public void InvokeOnEndEnemyTurn(List<DiceConsequenceData> sessionDecks)
     {
-        onEndEnemyTurn?.Invoke(sessionDecks);
+        //onEndEnemyTurn?.Invoke(sessionDecks);
     }
 }

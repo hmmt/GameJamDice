@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 유닛 연출도 여기서
+/// </summary>
 public class UnitViewerManager : MonoBehaviour
 {
     [SerializeField] UnitViewer unitPrefab;

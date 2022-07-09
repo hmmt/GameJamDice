@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class UnitViewer : MonoBehaviour
@@ -13,6 +14,12 @@ public class UnitViewer : MonoBehaviour
 
     [SerializeField] SpriteRenderer rendererRoot;
     [SerializeField] HUDProgressBar hpBar;
+
+    [SerializeField] GameObject shieldRoot;
+    [SerializeField] TextMeshPro shieldText;
+
+    [SerializeField] GameObject poisonRoot;
+    [SerializeField] TextMeshPro poisonText;
 
     private SpriteSet spriteSet = null;
 
@@ -50,7 +57,27 @@ public class UnitViewer : MonoBehaviour
         hpBar.SetCurrentValue(data.hp);
         hpBar.CalculateProgress();
 
-        if(data.isDead)
+        if (data.shield > 0)
+        {
+            shieldRoot.SetActive(true);
+            shieldText.text = data.shield.ToString();
+        }
+        else
+        {
+            shieldRoot.SetActive(false);
+        }
+
+        if(data.posionCount > 0)
+        {
+            poisonRoot.SetActive(true);
+            poisonText.text = data.shield.ToString();
+        }
+        else
+        {
+            poisonRoot.SetActive(false);
+        }
+
+        if (data.isDead)
         {
             rendererRoot.gameObject.SetActive(false);
         }
@@ -58,6 +85,8 @@ public class UnitViewer : MonoBehaviour
         {
             rendererRoot.gameObject.SetActive(true);
         }
+
+        
     }
 
     public void SetMotionToAttack()

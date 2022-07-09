@@ -203,6 +203,25 @@ public class IngameLogicManager : MonoBehaviour
         turnInfo.diceResultList.Clear();
         turnInfo.rolledDiceIndex = 0;
 
+        if(turnInfo.unit.posionCount > 0)
+        {
+            turnInfo.unit.posionCount--;
+            unitViewerManager.ShowOnlyDamageEffect(turnInfo.unit, turnInfo.unit.maxHp / 10);
+            turnInfo.unit.TakeDamage(turnInfo.unit.maxHp / 10);
+        }
+
+        if(turnInfo.unit.isDead)
+        {
+            yield return null;
+            if (CheckEndBattle())
+            {
+                yield break;
+            }
+            //Debug.Log(10);
+            NextUnitTurn();
+            yield break;
+        }
+
         InvokeOnStartTurn(turnInfo.unit);
 
         for (int i=0; i<playerData.deck.Count; i++)
@@ -303,6 +322,7 @@ public class IngameLogicManager : MonoBehaviour
         if (turnInfo.rolledDiceIndex == slotIndex
             && slotIndex < turnInfo.diceResultList.Count)
         {
+            turnInfo.rolledDiceUsed = true;
             var actor = turnInfo.unit;
             var diceResult = turnInfo.diceResultList[slotIndex];
             if (unit == null)
@@ -311,11 +331,6 @@ public class IngameLogicManager : MonoBehaviour
                 {
                     case BehaviourState.offense:
                         unit = actor.isPlayer ? monsterDataList.Where(x => !x.isDead).FirstOrDefault() : playerData;
-                        if (unit == null)
-                        {
-                            //Debug.LogError("???");
-                            return new List<ActionResultData>();
-                        }
                         break;
                     case BehaviourState.defense:
                         // º¸È£¸·
@@ -325,11 +340,6 @@ public class IngameLogicManager : MonoBehaviour
                         break;
                     case BehaviourState.poison:
                         unit = actor.isPlayer ? monsterDataList.Where(x => !x.isDead).FirstOrDefault() : playerData;
-                        if (unit == null)
-                        {
-                            //Debug.LogError("???");
-                            return new List<ActionResultData>();
-                        }
                         break;
                     case BehaviourState.recovery:
                         break;
@@ -345,26 +355,45 @@ public class IngameLogicManager : MonoBehaviour
             switch (diceResult.behaviourState)
             {
                 case BehaviourState.offense:
-                    // È½¼ö·Î ¹Ù²ã¾ß ÇÔ
-                    //unit.hp -= diceResult.actingPower;
+                    if (unit == null)
+                        break;
                     unit.TakeDamage(diceResult.actingPower);
                     resultList.Add(new ActionResultData(unit, diceResult.actingPower));
                     break;
                 case BehaviourState.defense:
                     // º¸È£¸·
+                    actor.shield += diceResult.actingPower;
                     break;
                 case BehaviourState.lightning:
                     // ¿¬¼â
+                    if(actor.isPlayer)
+                    {
+                        foreach(var monster in monsterDataList)
+                        {
+                            monster.TakeDamage(diceResult.actingPower);
+                            resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                        }
+                    }
+                    else
+                    {
+                        if (unit == null)
+                            break;
+                        unit.TakeDamage(diceResult.actingPower);
+                        resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                    }
                     break;
                 case BehaviourState.poison:
-                    // È½¼ö·Î ¹Ù²ã¾ß ÇÔ
+                    if (unit == null)
+                        break;
                     unit.TakeDamage(diceResult.actingPower);
+                    unit.posionCount++;
                     resultList.Add(new ActionResultData(unit, diceResult.actingPower));
                     break;
                 case BehaviourState.recovery:
+                    actor.RecoverHp(diceResult.actingPower);
                     break;
             }
-            turnInfo.rolledDiceUsed = true;
+            
             return resultList;
         }
         return new List<ActionResultData>();

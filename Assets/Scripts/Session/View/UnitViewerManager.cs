@@ -87,6 +87,15 @@ public class UnitViewerManager : MonoBehaviour
         playerUnit.SetMotionToIdle();
     }
 
+    public void ShowOnlyDamageEffect(UnitStatusData unit, int damage)
+    {
+        var viewer = FindUnit(unit);
+        if (viewer != null)
+        {
+            damageEffectPool.PlayDamageEffect(damage, viewer.transform.position);
+        }
+    }
+
     #region callback
     private void OnUseDice(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
     {

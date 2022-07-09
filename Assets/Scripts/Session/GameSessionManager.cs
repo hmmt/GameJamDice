@@ -30,6 +30,8 @@ public class GameSessionManager : MonoBehaviour
 
     void Initialize()
     {
+        player.unitData.hp = player.unitData.maxHp = 100;
+
         // ´ëÃæ ¸Ê ºä ¹× ui ¼¼ÆÃ
 
         unitManager.InitializePlayerUnit(player.unitData);

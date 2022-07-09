@@ -2,9 +2,24 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class IngameLogicManager : MonoBehaviour
 {
+    public class TurnInfo
+    {
+        public UnitStatusData unit = null;
+
+        // 주사위 굴렸는지
+        public bool diceRolled = false;
+
+        // 굴려진 주사위들
+        public List<DiceConsequenceData> diceResultList = new List<DiceConsequenceData>();
+        public int rolledDiceIndex = 0;
+        public bool rolledDiceUsed = false;
+    }
+
+
     public static IngameLogicManager instance { get; private set; }
 
     //[SerializeField] SessionPlayer sessionPlayer;
@@ -14,15 +29,11 @@ public class IngameLogicManager : MonoBehaviour
     event Action onStartBattle;
     event Action onEndBattle;
 
-
-    event Action onStartMyTurn;
-    event Action<List<DiceConsequenceData>> onRollCompleteMyTurn;
-    event Action<int> onReadyToUseDice;
-    event Action onEndMyTurn;
-
-    event Action<UnitStatusData> onStartEnemyTurn;
-    event Action<UnitStatusData, List<DiceConsequenceData>> onRollCompleteEnemyTurn;
-    event Action<UnitStatusData> onEndEnemyTurn;
+    event Action<UnitStatusData> onStartTurn;
+    event Action<UnitStatusData, List<DiceConsequenceData>> onRollCompleteTurn;
+    event Action<UnitStatusData, int> onReadyToUseDice;
+    event Action<UnitStatusData, DiceConsequenceData, List<ActionResultData>> onUseDice;
+    event Action<UnitStatusData> onEndTurn;
 
     /// <summary>
     /// 연출중인지 체크
@@ -32,14 +43,8 @@ public class IngameLogicManager : MonoBehaviour
     UnitStatusData playerData = new UnitStatusData();
     List<UnitStatusData> monsterDataList = new List<UnitStatusData>();
 
-
-    #region phase
-    bool rollDiceClicked;
-
-    List<DiceConsequenceData> currentDiceResultList = new List<DiceConsequenceData>();
-    int currentRolledDiceIndex = 0;
-    bool currentRolledDiceUsed = false;
-    #endregion
+    Queue<UnitStatusData> turnOrderQueue = new Queue<UnitStatusData>();
+    TurnInfo turnInfo = new TurnInfo();
 
     /// <summary>
     /// true면 전투중
@@ -55,7 +60,7 @@ public class IngameLogicManager : MonoBehaviour
     {
         StaticDataManager staticDataManager = FindObjectOfType<StaticDataManager>();
 
-        currentDiceResultList.Clear();
+        turnInfo.diceResultList.Clear();
 
         monsterDataList.Clear();
         for (int i=0; i<2; i++)
@@ -63,6 +68,8 @@ public class IngameLogicManager : MonoBehaviour
             UnitStatusData monster = new UnitStatusData();
             var monsterData = staticDataManager.GetMonster(x => x.index == i);
 
+            monster.isPlayer = false;
+            monster.faction = 1;
             monster.hp = monster.maxHp = monsterData.hitpoint;
 
             monster.deck = CreateMonsterDeck(staticDataManager, monsterData);
@@ -70,16 +77,22 @@ public class IngameLogicManager : MonoBehaviour
         }
 
         playerData = player.unitData;
+        //playerData.instanceId = 1;
         playerData.deck.Clear();
         playerData.deck.AddRange(player.deck);
+        playerData.isPlayer = true;
+        playerData.faction = 0;
 
         isEffectPhase = null;
 
         inBattle = true;
 
         unitViewerManager.InitializeMonsterUnits(monsterDataList);
+        unitViewerManager.InitBattle(this);
         ingameUIManager.SetPlayer(player)
                        .Init(this);
+
+        NextUnitTurn();
     }
 
     private List<SessionDeck> CreateMonsterDeck(StaticDataManager staticDataManager, S3MonsterData data)
@@ -100,6 +113,252 @@ public class IngameLogicManager : MonoBehaviour
 
         return output;
     }
+    #region logic
+
+    bool WaitEffectEnd()
+    {
+        return ingameUIManager.waiting || unitViewerManager.waiting;
+    }
+
+    private void ResetTurnOrderQueue()
+    {
+        turnOrderQueue.Enqueue(playerData);
+
+        foreach (var data in monsterDataList)
+        {
+            turnOrderQueue.Enqueue(data);
+        }
+    }
+
+    private bool CheckEndBattle()
+    {
+        if (playerData.isDead)
+        {
+            // 패배
+            InvokeOnEndBattle();
+            return true;
+        }
+
+
+        bool alldead = true;
+        foreach (var unit in monsterDataList)
+        {
+            if (!unit.isDead)
+            {
+                alldead = false;
+                break;
+            }
+        }
+        if (alldead)
+        {
+            // 승리
+            InvokeOnEndBattle();
+            return true;
+        }
+        return false;
+    }
+    private void NextUnitTurn()
+    {
+        if (turnOrderQueue.Count == 0)
+        {
+            ResetTurnOrderQueue();
+        }
+
+        if (turnOrderQueue.Count > 0)
+        {
+            StartCoroutine(ExecuteUnitTurn());
+        }
+        else
+        {
+            Debug.LogError("turn queue error");
+        }
+    }
+
+    IEnumerator ExecuteUnitTurn()
+    {
+        // 서버에서 처리할 경우 대부분 스킵 가능
+
+        // 턴 정보 초기화
+        turnInfo = new TurnInfo();
+        turnInfo.unit = turnOrderQueue.Dequeue();
+
+
+        if(!turnInfo.unit.isPlayer)
+        {
+            // 플레이어가 아니면 자동 굴리기
+            turnInfo.diceRolled = true;
+        }
+
+        Debug.Log(1);
+        InvokeOnStartTurn(turnInfo.unit);
+        Debug.Log(2);
+        while (!turnInfo.diceRolled)
+            yield return null;
+
+        Debug.Log(3);
+
+
+        // 주사위 굴리기
+        var consequnceList = new List<DiceConsequenceData>();
+        playerData.deck.ForEach(deck =>
+        {
+            consequnceList.Add(new DiceConsequenceData(deck.behaviourDice.GetRandomBehaviourState(),
+                                                       deck.actingPowerDice.GetRandomActingPower()));
+        });
+
+        turnInfo.diceResultList.Clear();
+        turnInfo.diceResultList.AddRange(consequnceList);
+        turnInfo.rolledDiceIndex = 0;
+
+        InvokeOnCompleteRollDice(turnInfo.unit, consequnceList);
+
+        Debug.Log(4);
+        // 주사위 굴리는 연출 대기
+        while (WaitEffectEnd())
+            yield return null;
+        Debug.Log(5);
+        while (turnInfo.rolledDiceIndex < turnInfo.diceResultList.Count)
+        {
+            var result = turnInfo.diceResultList[turnInfo.rolledDiceIndex];
+
+            turnInfo.rolledDiceUsed = false;
+
+            //InvokeOnReadyToUseDice(turnInfo.unit, turnInfo.rolledDiceIndex);
+
+            List<ActionResultData> actionResultList; 
+
+            if (turnInfo.unit.isPlayer &&
+                (result.behaviourState == BehaviourState.offense || result.behaviourState == BehaviourState.poison))
+            {
+                // 플레이어의 차례이고, 타겟팅 가능한 주사위면 입력 대기
+                //InvokeOnReadyToUseDice(turnInfo.unit, turnInfo.rolledDiceIndex);
+                actionResultList = UseDice(turnInfo.rolledDiceIndex, null);
+            }
+            else
+            {
+                // 그 외에는 바로 사용
+                actionResultList = UseDice(turnInfo.rolledDiceIndex, null);
+            }
+            Debug.Log(6 + "-" + turnInfo.rolledDiceIndex);
+            // 주사위 사용 대기
+            while (!turnInfo.rolledDiceUsed)
+                yield return null;
+
+            Debug.Log(7 + "-" + turnInfo.rolledDiceIndex);
+
+            InvokeOnUseDice(turnInfo.unit, result, actionResultList);
+            while (WaitEffectEnd())
+                yield return null;
+
+            turnInfo.rolledDiceIndex++;
+            Debug.Log(8 + "-" + turnInfo.rolledDiceIndex);
+        }
+
+        Debug.Log(8);
+        InvokeOnEndTurn(turnInfo.unit);
+        Debug.Log(9);
+
+
+        if (CheckEndBattle())
+        {
+            yield break;
+        }
+        Debug.Log(10);
+        NextUnitTurn();
+    }
+
+    public void RollMyDice()
+    {
+        turnInfo.diceRolled = true;
+    }
+
+    /// <summary>
+    /// 주사위 사용
+    /// </summary>
+    /// <param name="slotIndex"></param>
+    /// <param name="unit"></param>
+    public List<ActionResultData> UseDice(int slotIndex, UnitStatusData unit)
+    {
+        if (turnInfo.rolledDiceIndex == slotIndex
+            && slotIndex < turnInfo.diceResultList.Count)
+        {
+            var actor = turnInfo.unit;
+            var diceResult = turnInfo.diceResultList[slotIndex];
+            if (unit == null)
+            {
+                switch (diceResult.behaviourState)
+                {
+                    case BehaviourState.offense:
+                        unit = actor.isPlayer ? monsterDataList.Where(x => !x.isDead).FirstOrDefault() : playerData;
+                        if (unit == null)
+                        {
+                            Debug.LogError("???");
+                            return new List<ActionResultData>();
+                        }
+                        break;
+                    case BehaviourState.defense:
+                        // 보호막
+                        break;
+                    case BehaviourState.lightning:
+                        // 연쇄
+                        break;
+                    case BehaviourState.poison:
+                        unit = actor.isPlayer ? monsterDataList.Where(x => !x.isDead).FirstOrDefault() : playerData;
+                        if (unit == null)
+                        {
+                            Debug.LogError("???");
+                            return new List<ActionResultData>();
+                        }
+                        break;
+                    case BehaviourState.recovery:
+                        break;
+                }
+            }
+            else
+            {
+                // 유효한 타겟 랜덤 선택
+            }
+
+            List<ActionResultData> resultList = new List<ActionResultData>();
+
+            switch (diceResult.behaviourState)
+            {
+                case BehaviourState.offense:
+                    // 횟수로 바꿔야 함
+                    //unit.hp -= diceResult.actingPower;
+                    unit.TakeDamage(diceResult.actingPower);
+                    resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                    break;
+                case BehaviourState.defense:
+                    // 보호막
+                    break;
+                case BehaviourState.lightning:
+                    // 연쇄
+                    break;
+                case BehaviourState.poison:
+                    // 횟수로 바꿔야 함
+                    unit.TakeDamage(diceResult.actingPower);
+                    resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                    break;
+                case BehaviourState.recovery:
+                    break;
+            }
+            turnInfo.rolledDiceUsed = true;
+            return resultList;
+        }
+        return new List<ActionResultData>();
+    }
+
+
+    public void EndBattle()
+    {
+        if (!inBattle)
+            return;
+        inBattle = false;
+        unitViewerManager.ClearMonsters();
+        onEndBattle?.Invoke();
+    }
+    #endregion
     #region event
 
     /// <summary>
@@ -107,6 +366,7 @@ public class IngameLogicManager : MonoBehaviour
     /// </summary>
     public IngameLogicManager AddActionOnStartBattle(Action callback)
     {
+        onStartBattle -= callback;
         onStartBattle += callback;
         return this;
     }
@@ -122,6 +382,7 @@ public class IngameLogicManager : MonoBehaviour
     /// </summary>
     public IngameLogicManager AddActionOnEndBattle(Action callback)
     {
+        onEndBattle -= callback;
         onEndBattle += callback;
         return this;
     }
@@ -132,156 +393,93 @@ public class IngameLogicManager : MonoBehaviour
         return this;
     }
 
-    public IngameLogicManager AddActionOnStartMyTurn(Action callback)
+    public IngameLogicManager AddActionOnStartTurn(Action<UnitStatusData> callback)
     {
-        onStartMyTurn += callback;
+        onStartTurn -= callback;
+        onStartTurn += callback;
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnStartMyTurn(Action callback)
+    public IngameLogicManager RemoveActionOnStartTurn(Action<UnitStatusData> callback)
     {
-        onStartMyTurn -= callback;
+        onStartTurn -= callback;
         return this;
     }
 
-    public IngameLogicManager AddActionOnRollCompleteMyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager AddActionOnRollCompleteTurn(Action<UnitStatusData, List<DiceConsequenceData>> callback)
     {
-        onRollCompleteMyTurn += callback;
+        onRollCompleteTurn -= callback;
+        onRollCompleteTurn += callback;
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnRollCompleteMyTurn(Action<List<DiceConsequenceData>> callback)
+    public IngameLogicManager RemoveActionOnRollCompleteTurn(Action<UnitStatusData, List<DiceConsequenceData>> callback)
     {
-        onRollCompleteMyTurn -= callback;
+        onRollCompleteTurn -= callback;
         return this;
     }
 
-    public IngameLogicManager AddActionOnEndMyTurn(Action callback)
+    public IngameLogicManager AddActionOnUseDice(Action<UnitStatusData, DiceConsequenceData, List<ActionResultData>> callback)
     {
-        onEndMyTurn += callback;
+        onUseDice -= callback;
+        onUseDice += callback;
+        return this;
+    }
+
+    public IngameLogicManager RemoveActionOnRollCompleteTurn(Action<UnitStatusData, DiceConsequenceData, List<ActionResultData>> callback)
+    {
+        onUseDice -= callback;
+        return this;
+    }
+
+    public IngameLogicManager AddActionOnEndTurn(Action<UnitStatusData> callback)
+    {
+        onEndTurn += callback;
         return this;
     }
 
 
-    public IngameLogicManager RemoveActionOnEndMyTurn(Action callback)
+    public IngameLogicManager RemoveActionOnEndTurn(Action<UnitStatusData> callback)
     {
-        onEndMyTurn -= callback;
+        onEndTurn -= callback;
         return this;
     }
 
-    /// <param name="callback"> 현재 적용 중인 적의 상태  </param>
-    public IngameLogicManager AddActionOnStartEnemyTurn(Action<UnitStatusData> callback)
-    {
-        onStartEnemyTurn += callback;
-        return this;
-    }
-
-    public IngameLogicManager RemoveActionOnStartEnemyTurn(Action<UnitStatusData> callback)
-    {
-        onStartEnemyTurn -= callback;
-        return this;
-    }
-
-    /// <param name="callback"> 적이 주사위를 돌린 결과 값 </param>
-    public IngameLogicManager AddActionOnEndEnemyTurn(Action<UnitStatusData> callback)
-    {
-        onEndEnemyTurn += callback;
-        return this;
-    }
-
-    public IngameLogicManager RemoveActionOnEndEnemyTurn(Action<UnitStatusData> callback)
-    {
-        onEndEnemyTurn -= callback;
-        return this;
-    }
     #endregion
 
-    #region logic
-
-    bool CheckWait()
+    public void InvokeOnReadyToUseDice(UnitStatusData unit, int rolledDiceIndex)
     {
-        if (isEffectPhase == null)
-            return false;
-        return isEffectPhase.Invoke();
-    }
-
-    IEnumerator RollDiceRoutine()
-    {
-        yield return null;
-
-        var consequnceList = new List<DiceConsequenceData>();
-        playerData.deck.ForEach(deck =>
-        {
-            consequnceList.Add(new DiceConsequenceData(deck.behaviourDice.GetRandomBehaviourState(),
-                                                       deck.actingPowerDice.GetRandomActingPower()));
-        });
-
-        currentDiceResultList.Clear();
-        currentDiceResultList.AddRange(consequnceList);
-        currentRolledDiceIndex = 0;
-
-        onRollCompleteMyTurn?.Invoke(consequnceList);
-
-        // 굴리는 연출 대기
-        while (CheckWait())
-            yield return null;
-
-        while (currentRolledDiceIndex < currentDiceResultList.Count)
-        {
-            var result = currentDiceResultList[currentRolledDiceIndex];
-
-            currentRolledDiceUsed = false;
-
-            OnReadyToUseDice(currentRolledDiceIndex);
-            while (!currentRolledDiceUsed)
-                yield return null;
-
-            while (CheckWait())
-                yield return null;
-
-            currentRolledDiceIndex++;
-        }
-    }
-
-    public void RollMyDice()
-    {
-        StartCoroutine(RollDiceRoutine());
-    }
-
-    public void UseDice(int slotIndex)
-    {
-
-    }
-
-
-    public void EndBattle()
-    {
-        if (!inBattle)
-            return;
-        inBattle = false;
-        unitViewerManager.ClearMonsters();
-        onEndBattle?.Invoke();
-    }
-    #endregion
-
-    public void OnReadyToUseDice(int rolledDiceIndex)
-    {
-        onReadyToUseDice?.Invoke(rolledDiceIndex);
+        onReadyToUseDice?.Invoke(unit, rolledDiceIndex);
     }
 
     public void InvokeOnStartBattle()
     {
         onStartBattle?.Invoke();
     }
-
-    public void InvokeOnStartMyTurn()
+    public void InvokeOnEndBattle()
     {
-        onStartMyTurn?.Invoke();
+        onEndBattle?.Invoke();
     }
 
-    public void InvokeOnEndMyTurn(List<DiceConsequenceData> sessionDecks)
+    public void InvokeOnStartTurn(UnitStatusData unit)
+    {
+        onStartTurn?.Invoke(unit);
+    }
+
+    public void InvokeOnCompleteRollDice(UnitStatusData unit, List<DiceConsequenceData> sessionDecks)
+    {
+        onRollCompleteTurn?.Invoke(unit, sessionDecks);
+    }
+
+    public void InvokeOnUseDice(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> actionResultList)
+    {
+        onUseDice?.Invoke(unit, diceData, actionResultList);
+    }
+
+    public void InvokeOnEndTurn(UnitStatusData unit)
     {
         //onEndMyTurn?.Invoke(sessionDecks);
+        onEndTurn?.Invoke(unit);
     }
 
     public void InvokeOnStartEnemyTurn(List<DiceConsequenceData> sessionDecks)

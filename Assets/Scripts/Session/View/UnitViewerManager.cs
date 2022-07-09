@@ -7,6 +7,8 @@ using UnityEngine;
 /// </summary>
 public class UnitViewerManager : MonoBehaviour
 {
+    [SerializeField] DamageEffectPool damageEffectPool;
+
     [SerializeField] UnitViewer unitPrefab;
 
     [SerializeField] Transform playerPosition;
@@ -15,6 +17,7 @@ public class UnitViewerManager : MonoBehaviour
     UnitViewer playerUnit;
     List<UnitViewer> monsterUnits = new List<UnitViewer>();
 
+    public bool waiting { private set; get; }
 
     /// <summary>
     /// 한 번만 호출할것
@@ -47,6 +50,12 @@ public class UnitViewerManager : MonoBehaviour
         }
     }
 
+    public void InitBattle(IngameLogicManager logic)
+    {
+        //logic.InvokeOnUseDice()
+        logic.AddActionOnUseDice(OnUseDice);
+    }
+
     public void ClearMonsters()
     {
         foreach(var monster in monsterUnits)
@@ -54,6 +63,16 @@ public class UnitViewerManager : MonoBehaviour
             Destroy(monster.gameObject);
         }
         monsterUnits.Clear();
+    }
+
+    private UnitViewer FindUnit(UnitStatusData unit)
+    {
+        if(playerUnit.data == unit)
+        {
+            return playerUnit;
+        }
+
+        return monsterUnits.Find(x => x.data == unit);
     }
 
     public void SetToMoveState()
@@ -65,4 +84,36 @@ public class UnitViewerManager : MonoBehaviour
     {
         playerUnit.SetMotionToIdle();
     }
+
+    #region callback
+    private void OnUseDice(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
+    {
+        StartCoroutine(PlayDamageEffect(unit, diceData, resultList));
+    }
+
+    IEnumerator PlayDamageEffect(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
+    {
+        waiting = true;
+        yield return null;
+        try
+        {
+            foreach (var result in resultList)
+            {
+                var viewer = FindUnit(result.unit);
+                if (viewer != null)
+                {
+                    damageEffectPool.PlayDamageEffect(result.damage, viewer.transform.position);
+                }
+            }
+        }
+        catch(System.Exception e)
+        {
+
+        }
+
+        yield return new WaitForSeconds(1);
+        waiting = false;
+
+    }
+    #endregion
 }

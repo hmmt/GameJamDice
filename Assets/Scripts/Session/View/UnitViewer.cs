@@ -6,7 +6,7 @@ public class UnitViewer : MonoBehaviour
 {
     [SerializeField] GameObject rendererRoot;
 
-    UnitStatusData data;
+    public UnitStatusData data { private set; get; }
 
     public void SetIngameUnitData(UnitStatusData data)
     {
@@ -32,27 +32,10 @@ public class UnitViewer : MonoBehaviour
 
     public void SetMotionToMove()
     {
-        StopAllCoroutines();
-
-        StartCoroutine(MoveMotion_temp());
     }
 
     public void SetMotionToIdle()
     {
-        StopAllCoroutines();
     }
 
-    IEnumerator MoveMotion_temp()
-    {
-        float elapsedTime = 0;
-
-
-        // 임시 모션
-        while(true)
-        {
-            rendererRoot.transform.localPosition = new Vector3(0, Mathf.PingPong(elapsedTime, 0.5f), 0);
-            yield return null;
-            elapsedTime += Time.deltaTime;
-        }
-    }
 }

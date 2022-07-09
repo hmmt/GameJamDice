@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LActingPowerDice : MonoBehaviour
+public class StaticS3ActingPowerDice : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()

@@ -1,0 +1,5 @@
+0	TRUE	permanent	offense	offense	offense	offense	defense	defense	0
+1	FALSE	temporary	offense	offense	offense	offense	offense	offense	0
+2	FALSE	temporary	offense	offense	offense	offense	offense	defense	0
+3	FALSE	temporary	offense	offense	offense	offense	offense	poison	0
+4	FALSE	temporary	offense	offense	offense	offense	offense	lightning	0

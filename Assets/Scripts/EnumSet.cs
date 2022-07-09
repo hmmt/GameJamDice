@@ -2,15 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnumSet
+public enum BehaviourState
 {
-    public enum BehaviourState
-    {
+    offense,
+    lightning,
+    poison,
+    defense,
+    recovery
+}
 
-    }
+public enum ActingPowerState
+{
 
-    public enum ActingPowerState
-    {
+}
 
-    }
+public enum DiceCategory
+{
+    permanent,
+    temporary
 }

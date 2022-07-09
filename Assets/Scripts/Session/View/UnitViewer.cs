@@ -63,7 +63,7 @@ public class UnitViewer : MonoBehaviour
         StopAllCoroutines();
         if (spriteSet != null)
         {
-            StartCoroutine(PlaySpriteSet(spriteSet.move));
+            StartCoroutine(PlayLoop(spriteSet.move));
         }
     }
 
@@ -72,11 +72,11 @@ public class UnitViewer : MonoBehaviour
         StopAllCoroutines();
         if (spriteSet != null)
         {
-            StartCoroutine(PlayIdle(spriteSet.idle));
+            StartCoroutine(PlayLoop(spriteSet.idle));
         }
     }
 
-    IEnumerator PlayIdle(List<Sprite> list)
+    IEnumerator PlayLoop(List<Sprite> list)
     {
         if (list == null || list.Count == 0)
             yield break;
@@ -85,21 +85,22 @@ public class UnitViewer : MonoBehaviour
         while(true)
         {
             index %= list.Count;
-            rendererRoot.sprite = list[index];
+            rendererRoot.sprite = list[index++];
             yield return new WaitForSeconds(0.08f);
         }
     }
+
     IEnumerator PlaySpriteSet(List<Sprite> list)
     {
         for(int i=0; i<list.Count; i++)
         {
             rendererRoot.sprite = list[i];
-            yield return new WaitForSeconds(0.08f);
+            yield return new WaitForSeconds(0.05f);
         }
 
         if(spriteSet != null)
         {
-            StartCoroutine(PlayIdle(spriteSet.idle));
+            StartCoroutine(PlayLoop(spriteSet.idle));
         }
     }
 

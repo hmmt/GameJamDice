@@ -44,7 +44,6 @@ public class GameSessionManager : MonoBehaviour
     void MoveToNext()
     {
         // 대충 노드 이동
-
         var nexts = player.currentDungeon.GetNextNodeIds(player.currentDugeonNodeId);
         if (nexts.Count > 0)
         {
@@ -81,7 +80,7 @@ public class GameSessionManager : MonoBehaviour
         battleLogic.Init(player, player.currentDugeonNodeId);
     }
 
-    private void OnEndBattle()
+    private void OnEndBattle(bool win)
     {
         battleLogic.RemoveActionOnEndbattle(OnEndBattle);
 
@@ -90,7 +89,8 @@ public class GameSessionManager : MonoBehaviour
 
     IEnumerator WaitAfterClear()
     {
-        yield return new WaitForSeconds(0.25f);
+        // IngameUIManager의 StartPopup()의 대기시간보다 길어야 함
+        yield return new WaitForSeconds(2f);
         unitManager.ClearMonsters();
 
         if(player.unitData.isDead)

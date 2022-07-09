@@ -6,16 +6,21 @@ using UnityEngine.U2D;
 [CreateAssetMenu(fileName = "SpriteContainer", menuName = "SpriteContainer")]
 public class SpriteContainer : ScriptableObject
 {
-    [SerializeField] List<SpriteAtlas> atlasList;
+    [SerializeField] List<SpriteSet> atlasList;
 
-    public Sprite GetSprite(string spriteName)
+    public SpriteSet GetSpriteSet(int index)
     {
-        foreach(var atlas in atlasList)
-        {
-            var targetSprite = atlas.GetSprite(spriteName);
-            if (targetSprite != null)
-                return targetSprite;
-        }
-        return null;
+        if (index < 0 || index >= atlasList.Count)
+            return null;
+
+        return atlasList[index];
     }
+}
+
+[System.Serializable]
+public class SpriteSet
+{
+    public List<Sprite> idle = new List<Sprite>();
+    public List<Sprite> attack = new List<Sprite>();
+    public List<Sprite> move = new List<Sprite>();
 }

@@ -71,6 +71,7 @@ public class IngameLogicManager : MonoBehaviour
             monster.isPlayer = false;
             monster.faction = 1;
             monster.hp = monster.maxHp = monsterData.hitpoint;
+            monster.monsterIndex = monsterData.index;
 
             monster.deck = CreateMonsterDeck(staticDataManager, monsterData);
             monsterDataList.Add(monster);
@@ -189,13 +190,13 @@ public class IngameLogicManager : MonoBehaviour
             turnInfo.diceRolled = true;
         }
 
-        Debug.Log(1);
+        //Debug.Log(1);
         InvokeOnStartTurn(turnInfo.unit);
-        Debug.Log(2);
+        //Debug.Log(2);
         while (!turnInfo.diceRolled)
             yield return null;
 
-        Debug.Log(3);
+        //Debug.Log(3);
 
 
         // 주사위 굴리기
@@ -212,11 +213,11 @@ public class IngameLogicManager : MonoBehaviour
 
         InvokeOnCompleteRollDice(turnInfo.unit, consequnceList);
 
-        Debug.Log(4);
+        //Debug.Log(4);
         // 주사위 굴리는 연출 대기
         while (WaitEffectEnd())
             yield return null;
-        Debug.Log(5);
+        //Debug.Log(5);
         while (turnInfo.rolledDiceIndex < turnInfo.diceResultList.Count)
         {
             var result = turnInfo.diceResultList[turnInfo.rolledDiceIndex];
@@ -239,31 +240,31 @@ public class IngameLogicManager : MonoBehaviour
                 // 그 외에는 바로 사용
                 actionResultList = UseDice(turnInfo.rolledDiceIndex, null);
             }
-            Debug.Log(6 + "-" + turnInfo.rolledDiceIndex);
+            //Debug.Log(6 + "-" + turnInfo.rolledDiceIndex);
             // 주사위 사용 대기
             while (!turnInfo.rolledDiceUsed)
                 yield return null;
 
-            Debug.Log(7 + "-" + turnInfo.rolledDiceIndex);
+            //Debug.Log(7 + "-" + turnInfo.rolledDiceIndex);
 
             InvokeOnUseDice(turnInfo.unit, result, actionResultList);
             while (WaitEffectEnd())
                 yield return null;
 
             turnInfo.rolledDiceIndex++;
-            Debug.Log(8 + "-" + turnInfo.rolledDiceIndex);
+            //Debug.Log(8 + "-" + turnInfo.rolledDiceIndex);
         }
 
-        Debug.Log(8);
+        //Debug.Log(8);
         InvokeOnEndTurn(turnInfo.unit);
-        Debug.Log(9);
+        //Debug.Log(9);
 
 
         if (CheckEndBattle())
         {
             yield break;
         }
-        Debug.Log(10);
+        //Debug.Log(10);
         NextUnitTurn();
     }
 

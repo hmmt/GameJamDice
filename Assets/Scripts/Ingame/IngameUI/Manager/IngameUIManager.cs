@@ -14,6 +14,13 @@ public class IngameUIManager : MonoBehaviour
 
     public bool waiting { private set; get; }
 
+    private void Awake()
+    {
+        foreach (var rolledInfo in rolledInfos)
+        {
+            rolledInfo.SetToEmpty();
+        }
+    }
     public void Init(IngameLogicManager ingameLogicManager)
     {
         if (rollButton != null)

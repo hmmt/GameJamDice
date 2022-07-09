@@ -28,6 +28,7 @@ public class UnitViewerManager : MonoBehaviour
             Destroy(playerUnit.gameObject);
         playerUnit = Instantiate(unitPrefab, transform);
         playerUnit.gameObject.SetActive(true);
+        playerUnit.LoadPlayerSprites();
         playerUnit.SetIngameUnitData(data);
     }
 
@@ -45,6 +46,7 @@ public class UnitViewerManager : MonoBehaviour
             var newMonster = Instantiate(unitPrefab, transform);
             newMonster.gameObject.SetActive(true);
             newMonster.SetIngameUnitData(monster);
+            newMonster.LoadMonsterSprites(monster.monsterIndex);
             newMonster.transform.localPosition = position;
             monsterUnits.Add(newMonster);
         }
@@ -97,6 +99,11 @@ public class UnitViewerManager : MonoBehaviour
         yield return null;
         try
         {
+            var actor = FindUnit(unit);
+            if(actor != null)
+            {
+                actor.SetMotionToAttack();
+            }
             foreach (var result in resultList)
             {
                 var viewer = FindUnit(result.unit);

@@ -48,9 +48,9 @@ public class FieldMapViewer : MonoBehaviour
                 var pos = tr.localPosition;
                 pos.x -= Time.deltaTime * speed;
 
-                if (pos.x > rightBound + (rightBound - leftBound) / 2)
+                if (pos.x < leftBound - (rightBound - leftBound) / 2)
                 {
-                    pos.x = leftBound - (rightBound - leftBound) / 2;
+                    pos.x = rightBound + (rightBound - leftBound) / 2;
                 }
 
                 tr.localPosition = pos;

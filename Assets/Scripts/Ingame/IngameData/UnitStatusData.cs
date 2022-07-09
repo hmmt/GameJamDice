@@ -12,6 +12,11 @@ public class UnitStatusData
     /// </summary>
     public int instanceId;
 
+    /// <summary>
+    /// 몬스터일때만 사용
+    /// </summary>
+    public int monsterIndex;
+
     public int maxHp;
     public int hp;
     public int shield;
@@ -36,7 +41,20 @@ public class UnitStatusData
 
     public void TakeDamage(int damage)
     {
-        hp -= damage;
+        if (shield > 0)
+        {
+            if(shield >= damage)
+            {
+                shield -= damage;
+            }
+            else
+            {
+                hp -= damage - shield;
+                shield = 0;
+            }
+        }
+        else
+            hp -= damage;
         Debug.Log(string.Format("hp : {0}, damage : {1}, player : {2}", hp, damage, isPlayer));
     }
 }

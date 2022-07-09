@@ -219,4 +219,20 @@ public static class CommonUtility
 
     public static float ParseToGlobalFloat(this string target)
         => float.Parse(target, CultureInfo.InvariantCulture);
+
+    public static Vector2 SetX(this Vector2 vector2, float x)
+    {
+        vector2.x = x;
+        return vector2;
+    }
+
+    public static Vector2 SetY(this Vector2 vector2, float y)
+    {
+        vector2.y = y;
+        return vector2;
+    }
+
+    public static float Clamp01Value(this float value)
+        => Mathf.Clamp01(value);
+
 }

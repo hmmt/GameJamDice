@@ -9,14 +9,14 @@ public class IngameUIManager : MonoBehaviour
     SessionPlayer player;
 
     [Header("UI inspector")]
-    [SerializeField] Button rollButton;
+    //[SerializeField] UIButton rollButton;
     [SerializeField] IngameRolledInfo[] rolledInfos;
 
     private bool waiting = false;
 
     public void Init(IngameLogicManager ingameLogicManager)
     {
-        rollButton.gameObject.SetActive(false);
+        //rollButton.gameObject.SetActive(false);
 
         foreach(var rolledInfo in rolledInfos)
         {
@@ -77,11 +77,11 @@ public class IngameUIManager : MonoBehaviour
     #region callback
     private void OnStartMyTurn()
     {
-        rollButton.gameObject.SetActive(true);
+        //rollButton.gameObject.SetActive(true);
     }
     private void OnRollCompleteMyTurn(List<DiceConsequenceData> list)
     {
-        rollButton.gameObject.SetActive(false);
+        //rollButton.gameObject.SetActive(false);
         StartCoroutine(ShowRollDiceList(list, OnCompleteMyRollEffect));
     }
     private void OnCompleteMyRollEffect()
@@ -95,7 +95,7 @@ public class IngameUIManager : MonoBehaviour
     }
     private void OnRollCompleteEnemyTurn(UnitStatusData unit, List<DiceConsequenceData> list)
     {
-        rollButton.gameObject.SetActive(false);
+        //rollButton.gameObject.SetActive(false);
         StartCoroutine(ShowRollDiceList(list, OnCompleteEnemyRollEffect));
     }
     private void OnCompleteEnemyRollEffect()

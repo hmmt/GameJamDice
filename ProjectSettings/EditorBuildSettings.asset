@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/LogoScene.unity
     guid: b25b3a1d3aeda8f4b85a850fc268710a
   - enabled: 1
+    path: Assets/Scenes/OutgameScene.unity
+    guid: 659ff4958c32da34e89827bcafcc14c1
+  - enabled: 1
     path: Assets/Scenes/DungeonScene.unity
     guid: fc015698bd3a56140bd4adeb5c877e59
   m_configObjects: {}

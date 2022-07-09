@@ -22,10 +22,8 @@ public class SessionPlayer
     /// 몇번째 던전인지
     /// </summary>
     public int dungeonStageLevel;
-    /// <summary>
-    /// 현재 hp. 전투 끝날 때 마다 갱신?
-    /// </summary>
-    public int hp;
+
+    public UnitStatusData unitData = new UnitStatusData();
     
 
     /// <summary>

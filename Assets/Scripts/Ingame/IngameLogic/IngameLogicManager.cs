@@ -9,6 +9,7 @@ public class IngameLogicManager : MonoBehaviour
 
     //[SerializeField] SessionPlayer sessionPlayer;
     [SerializeField] IngameUIManager ingameUIManager;
+    [SerializeField] UnitViewerManager unitViewerManager;
 
     event Action onStartBattle;
     event Action onEndBattle;
@@ -17,10 +18,13 @@ public class IngameLogicManager : MonoBehaviour
     event Action<List<DiceConsequenceData>> onStartEnemyTurn;
     event Action<List<DiceConsequenceData>> onEndEnemyTurn;
 
+    UnitStatusData playerData = new UnitStatusData();
+    List<UnitStatusData> monsterDataList = new List<UnitStatusData>();
+
     /// <summary>
     /// true면 전투중
     /// </summary>
-    private bool _inBattle = false;
+    bool inBattle = false;
 
     private void Awake()
     {
@@ -29,9 +33,47 @@ public class IngameLogicManager : MonoBehaviour
 
     public void Init(SessionPlayer player, int dungeonIndex)
     {
-        _inBattle = true;
+        StaticDataManager staticDataManager = FindObjectOfType<StaticDataManager>();
+
+        monsterDataList.Clear();
+        for (int i=0; i<2; i++)
+        {
+            UnitStatusData monster = new UnitStatusData();
+            var monsterData = staticDataManager.GetMonster(x => x.index == i);
+
+            monster.hp = monster.maxHp = monsterData.hitpoint;
+
+            monster.deck = CreateMonsterDeck(staticDataManager, monsterData);
+            monsterDataList.Add(monster);
+        }
+
+        playerData = player.unitData;
+
+        unitViewerManager.InitializeMonsterUnits(monsterDataList);
+
+        inBattle = true;
+
         ingameUIManager.SetPlayer(player)
                        .Init(this);
+    }
+
+    private List<SessionDeck> CreateMonsterDeck(StaticDataManager staticDataManager, S3MonsterData data)
+    {
+        List<SessionDeck> output = new List<SessionDeck>();
+        output.Add(new SessionDeck().SetBehaviourDice(staticDataManager.GetBehaviourDice(x => x.index == data.behaviourDice_1))
+            .SetActingPowerDice(staticDataManager.GetActionPowerDice(x => x.index == data.actingPowerDice_1)));
+        output.Add(new SessionDeck().SetBehaviourDice(staticDataManager.GetBehaviourDice(x => x.index == data.behaviourDice_2))
+            .SetActingPowerDice(staticDataManager.GetActionPowerDice(x => x.index == data.actingPowerDice_2)));
+        output.Add(new SessionDeck().SetBehaviourDice(staticDataManager.GetBehaviourDice(x => x.index == data.behaviourDice_3))
+            .SetActingPowerDice(staticDataManager.GetActionPowerDice(x => x.index == data.actingPowerDice_3)));
+        output.Add(new SessionDeck().SetBehaviourDice(staticDataManager.GetBehaviourDice(x => x.index == data.behaviourDice_4))
+            .SetActingPowerDice(staticDataManager.GetActionPowerDice(x => x.index == data.actingPowerDice_4)));
+        output.Add(new SessionDeck().SetBehaviourDice(staticDataManager.GetBehaviourDice(x => x.index == data.behaviourDice_5))
+            .SetActingPowerDice(staticDataManager.GetActionPowerDice(x => x.index == data.actingPowerDice_5)));
+
+        output.RemoveAll(x => x.behaviourDice == null || x.actingPowerDice == null);
+
+        return output;
     }
 
 
@@ -125,9 +167,10 @@ public class IngameLogicManager : MonoBehaviour
 
     public void InvokeOnEndBattle()
     {
-        if (!_inBattle)
+        if (!inBattle)
             return;
-        _inBattle = false;
+        inBattle = false;
+        unitViewerManager.ClearMonsters();
         onEndBattle?.Invoke();
     }
 

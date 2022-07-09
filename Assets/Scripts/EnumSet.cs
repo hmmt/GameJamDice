@@ -18,3 +18,9 @@ public enum DiceCategory
     permanent,
     temporary
 }
+
+
+public enum UnitBufType
+{
+    Poison
+}

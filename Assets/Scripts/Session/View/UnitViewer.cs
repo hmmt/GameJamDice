@@ -5,7 +5,31 @@ using UnityEngine;
 public class UnitViewer : MonoBehaviour
 {
     [SerializeField] GameObject rendererRoot;
-    
+
+    UnitStatusData data;
+
+    public void SetIngameUnitData(UnitStatusData data)
+    {
+        this.data = data;
+    }
+
+    public void LoadPlayerSprites()
+    {
+
+    }
+    public void LoadMonsterSprites(int index)
+    {
+    }
+
+
+    private void Update()
+    {
+        if (data == null)
+            return;
+        // 대충 유닛 ui 갱신
+    }
+
+
     public void SetMotionToMove()
     {
         StopAllCoroutines();

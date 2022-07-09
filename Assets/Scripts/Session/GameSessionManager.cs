@@ -32,6 +32,9 @@ public class GameSessionManager : MonoBehaviour
     void Initialize()
     {
         // ´ëÃæ ¸Ê ºä ¹× ui ¼¼ÆÃ
+
+        unitManager.InitializePlayerUnit(player.unitData);
+
         StartCoroutine(MoveToRoutine(1));
     }
 
@@ -54,7 +57,7 @@ public class GameSessionManager : MonoBehaviour
     {
         unitManager.SetToMoveState();
         fieldMap.SetToMoveState();
-        yield return new WaitForSeconds(4);
+        yield return new WaitForSeconds(2);
 
         unitManager.SetToIdleState();
         fieldMap.SetToStopState();
@@ -80,6 +83,7 @@ public class GameSessionManager : MonoBehaviour
     IEnumerator WaitAfterClear()
     {
         yield return new WaitForSeconds(0.25f);
+        unitManager.ClearMonsters();
         MoveToNext();
     }
     private void ClearDungeon()

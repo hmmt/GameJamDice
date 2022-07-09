@@ -21,6 +21,8 @@ public class UnitStatusData
     public int hp;
     public int shield;
 
+    public int posionCount = 0;
+
     public bool isPlayer = false;
     public int faction = 0;
 
@@ -29,14 +31,12 @@ public class UnitStatusData
     /// </summary>
     public List<SessionDeck> deck = new List<SessionDeck>();
 
-    public List<UnitBuf> bufs = new List<UnitBuf>();
-
     public bool isDead => hp <= 0;
 
     public void ClearForEndBattle()
     {
         shield = 0;
-        bufs.Clear();
+        posionCount = 0;
     }
 
     public void TakeDamage(int damage)
@@ -58,10 +58,3 @@ public class UnitStatusData
         Debug.Log(string.Format("hp : {0}, damage : {1}, player : {2}", hp, damage, isPlayer));
     }
 }
-
-public class UnitBuf
-{
-
-}
-
-

@@ -17,6 +17,11 @@ public class HUDStageLocationShower : MonoBehaviour
 
     public void Init()
     {
+        StartCoroutine(InitNextFrame());
+    }
+    IEnumerator InitNextFrame()
+    {
+        yield return null;
         var endPos = mapLocatorList[currentStage].anchoredPosition + new Vector2(0f, 30f);
         rtTarget.anchoredPosition = endPos;
     }

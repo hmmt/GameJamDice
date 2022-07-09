@@ -49,6 +49,15 @@ public class UnitViewer : MonoBehaviour
         hpBar.SetMaxValue(data.maxHp);
         hpBar.SetCurrentValue(data.hp);
         hpBar.CalculateProgress();
+
+        if(data.isDead)
+        {
+            rendererRoot.gameObject.SetActive(false);
+        }
+        else
+        {
+            rendererRoot.gameObject.SetActive(true);
+        }
     }
 
     public void SetMotionToAttack()

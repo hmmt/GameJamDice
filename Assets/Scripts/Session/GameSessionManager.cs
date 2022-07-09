@@ -58,6 +58,7 @@ public class GameSessionManager : MonoBehaviour
 
     IEnumerator MoveToRoutine(int nextNode)
     {
+        yield return null;
         unitManager.SetToMoveState();
         fieldMap.SetToMoveState();
 
@@ -91,10 +92,21 @@ public class GameSessionManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.25f);
         unitManager.ClearMonsters();
-        MoveToNext();
+
+        if(player.unitData.isDead)
+        {
+            // 게임 오버
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Logo");
+        }
+        else
+        {
+            MoveToNext();
+        }
     }
     private void ClearDungeon()
     {
+        Debug.Log("클리어!");
+
 
     }
 }

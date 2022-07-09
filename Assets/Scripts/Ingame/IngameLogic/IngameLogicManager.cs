@@ -116,6 +116,21 @@ public class IngameLogicManager : MonoBehaviour
 
         return output;
     }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.F11))
+        {
+            playerData.TakeDamage(100);
+        }
+        if (Input.GetKeyDown(KeyCode.F12))
+        {
+            foreach(var monster in monsterDataList)
+            {
+                monster.TakeDamage(100);
+            }
+        }
+    }
     #region logic
 
     bool WaitEffectEnd()
@@ -138,7 +153,7 @@ public class IngameLogicManager : MonoBehaviour
         if (playerData.isDead)
         {
             // ÆÐ¹è
-            InvokeOnEndBattle();
+            EndBattle();
             return true;
         }
 
@@ -155,7 +170,7 @@ public class IngameLogicManager : MonoBehaviour
         if (alldead)
         {
             // ½Â¸®
-            InvokeOnEndBattle();
+            EndBattle();
             return true;
         }
         return false;
@@ -295,7 +310,7 @@ public class IngameLogicManager : MonoBehaviour
                         unit = actor.isPlayer ? monsterDataList.Where(x => !x.isDead).FirstOrDefault() : playerData;
                         if (unit == null)
                         {
-                            Debug.LogError("???");
+                            //Debug.LogError("???");
                             return new List<ActionResultData>();
                         }
                         break;
@@ -309,7 +324,7 @@ public class IngameLogicManager : MonoBehaviour
                         unit = actor.isPlayer ? monsterDataList.Where(x => !x.isDead).FirstOrDefault() : playerData;
                         if (unit == null)
                         {
-                            Debug.LogError("???");
+                            //Debug.LogError("???");
                             return new List<ActionResultData>();
                         }
                         break;
@@ -458,10 +473,6 @@ public class IngameLogicManager : MonoBehaviour
     public void InvokeOnStartBattle()
     {
         onStartBattle?.Invoke();
-    }
-    public void InvokeOnEndBattle()
-    {
-        onEndBattle?.Invoke();
     }
 
     public void InvokeOnStartTurn(UnitStatusData unit)

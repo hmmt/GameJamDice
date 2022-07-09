@@ -1,15 +1,14 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using Lean.Common;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using FSA = UnityEngine.Serialization.FormerlySerializedAsAttribute;
 
 namespace Lean.Pool
 {
 	/// <summary>This component allows you to pool GameObjects, giving you a very fast alternative to Instantiate and Destroy.
 	/// Pools also have settings to preload, recycle, and set the spawn capacity, giving you lots of control over your spawning.</summary>
+	[ExecuteInEditMode]
 	[HelpURL(LeanPool.HelpUrlPrefix + "LeanGameObjectPool")]
 	[AddComponentMenu(LeanPool.ComponentPathPrefix + "GameObject Pool")]
 	public class LeanGameObjectPool : MonoBehaviour, ISerializationCallbackReceiver
@@ -30,57 +29,48 @@ namespace Lean.Pool
 			BroadcastIPoolable
 		}
 
-		/// <summary>All active and enabled pools in the scene.</summary>
-		public static LinkedList<LeanGameObjectPool> Instances = new LinkedList<LeanGameObjectPool>();
-
-		/// <summary>The prefab this pool controls.</summary>
-		public GameObject Prefab
+		public enum StrategyType
 		{
-			set
-			{
-				if (value != prefab)
-				{
-					UnregisterPrefab();
-
-					prefab = value;
-
-					RegisterPrefab();
-				}
-			}
-
-			get
-			{
-				return prefab;
-			}
+			ActivateAndDeactivate,
+			DeactivateViaHierarchy
 		}
 
-		[SerializeField] [UnityEngine.Serialization.FormerlySerializedAs("Prefab")] private GameObject prefab;
+		/// <summary>All active and enabled pools in the scene.</summary>
+		public static LinkedList<LeanGameObjectPool> Instances = new LinkedList<LeanGameObjectPool>(); private LinkedListNode<LeanGameObjectPool> instancesNode;
 
-		/// <summary>If you need to peform a special action when a prefab is spawned or despawned, then this allows you to control how that action is performed.
+		/// <summary>The prefab this pool controls.</summary>
+		public GameObject Prefab { set { if (value != prefab) { UnregisterPrefab(); prefab = value; RegisterPrefab(); } } get { return prefab; } } [FSA("Prefab")] [SerializeField] private GameObject prefab;
+
+		/// <summary>If you need to perform a special action when a prefab is spawned or despawned, then this allows you to control how that action is performed.
 		/// <tip>None</tip>If you use this then you must rely on the OnEnable and OnDisable messages.
 		/// <tip>SendMessage</tip>The prefab clone is sent the OnSpawn and OnDespawn messages.
 		/// <tip>BroadcastMessage</tip>The prefab clone and all its children are sent the OnSpawn and OnDespawn messages.
 		/// <tip>IPoolable</tip>The prefab clone's components implementing IPoolable are called.
 		/// <tip>Broadcast IPoolable</tip>The prefab clone and all its child components implementing IPoolable are called.</summary>
-		public NotificationType Notification = NotificationType.IPoolable;
+		public NotificationType Notification { set { notification = value; } get { return notification; } } [FSA("Notification")] [SerializeField] private NotificationType notification = NotificationType.IPoolable;
+
+		/// <summary>This allows you to control how spawned/despawned GameObjects will be handled. The <b>DeactivateViaHierarchy</b> mode should be used if you need to maintain your prefab's de/activation state.
+		/// ActivateAndDeactivate = Despawned clones will be deactivated and placed under this GameObject.
+		/// DeactivateViaHierarchy = Despawned clones will be placed under a deactivated GameObject and left alone.</summary>
+		public StrategyType Strategy { set { strategy = value; } get { return strategy; } } [FSA("Strategy")] [SerializeField] private StrategyType strategy = StrategyType.ActivateAndDeactivate;
 
 		/// <summary>Should this pool preload some clones?</summary>
-		public int Preload;
+		public int Preload { set { preload = value; } get { return preload; } } [FSA("Preload")] [SerializeField] private int preload;
 
 		/// <summary>Should this pool have a maximum amount of spawnable clones?</summary>
-		public int Capacity;
+		public int Capacity { set { capacity = value; } get { return capacity; } } [FSA("Capacity")] [SerializeField] private int capacity;
 
 		/// <summary>If the pool reaches capacity, should new spawns force older ones to despawn?</summary>
-		public bool Recycle;
+		public bool Recycle { set { recycle = value; } get { return recycle; } } [FSA("Recycle")] [SerializeField] private bool recycle;
 
 		/// <summary>Should this pool be marked as DontDestroyOnLoad?</summary>
-		public bool Persist;
+		public bool Persist { set { persist = value; } get { return persist; } } [FSA("Persist")] [SerializeField] private bool persist;
 
 		/// <summary>Should the spawned clones have their clone index appended to their name?</summary>
-		public bool Stamp;
+		public bool Stamp { set { stamp = value; } get { return stamp; } } [FSA("Stamp")] [SerializeField] private bool stamp;
 
 		/// <summary>Should detected issues be output to the console?</summary>
-		public bool Warnings = true;
+		public bool Warnings { set { warnings = value; } get { return warnings; } } [FSA("Warnings")] [SerializeField] private bool warnings = true;
 
 		/// <summary>This stores all spawned clones in a list. This is used when Recycle is enabled, because knowing the spawn order must be known. This list is also used during serialization.</summary>
 		[SerializeField]
@@ -96,13 +86,55 @@ namespace Lean.Pool
 		/// <summary>All the delayed destruction objects.</summary>
 		[SerializeField]
 		private List<Delay> delays = new List<Delay>();
-
-		/// <summary>Node within Instances.</summary>
-		private LinkedListNode<LeanGameObjectPool> node;
+		
+		[SerializeField]
+		private Transform deactivatedChild;
 
 		private static Dictionary<GameObject, LeanGameObjectPool> prefabMap = new Dictionary<GameObject, LeanGameObjectPool>();
 
 		private static List<IPoolable> tempPoolables = new List<IPoolable>();
+
+		/// <summary>If you're using the <b>Strategy = DeactivateViaHierarchy</b> mode, then all despawned clones will be placed under this.</summary>
+		public Transform DeactivatedChild
+		{
+			get
+			{
+				if (deactivatedChild == null)
+				{
+					var child = new GameObject("Despawned Clones");
+
+					child.SetActive(false);
+
+					deactivatedChild = child.transform;
+
+					deactivatedChild.SetParent(transform, false);
+				}
+
+				return deactivatedChild;
+			}
+		}
+
+#if UNITY_EDITOR
+		/// <summary>This will return false if you have preloaded prefabs do not match the <b>Prefab</b>.
+		/// NOTE: This is only available in the editor.</summary>
+		public bool DespawnedClonesMatch
+		{
+			get
+			{
+				for (var i = despawnedClones.Count - 1; i >= 0; i--)
+				{
+					var clone = despawnedClones[i];
+
+					if (clone != null && UnityEditor.PrefabUtility.GetCorrespondingObjectFromSource(clone) != prefab)
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+		}
+#endif
 
 		/// <summary>Find the pool responsible for handling the specified prefab.</summary>
 		public static bool TryFindPoolByPrefab(GameObject prefab, ref LeanGameObjectPool foundPool)
@@ -166,27 +198,69 @@ namespace Lean.Pool
 			}
 		}
 
-		/// <summary>This will either spawn a previously despanwed/preloaded clone, recycle one, create a new one, or return null.</summary>
+		/// <summary>This will either spawn a previously despawned/preloaded clone, recycle one, create a new one, or return null.
+		/// NOTE: This method is designed to work with Unity's event system, so it has no return value.</summary>
 		public void Spawn()
 		{
-			Spawn(transform.position, transform.rotation);
+			var clone = default(GameObject); TrySpawn(ref clone);
 		}
 
-		public GameObject Spawn(Vector3 position, Quaternion rotation, Transform parent = null, bool worldPositionStays = true)
+		/// <summary>This will either spawn a previously despawned/preloaded clone, recycle one, create a new one, or return null.
+		/// NOTE: This method is designed to work with Unity's event system, so it has no return value.</summary>
+		public void Spawn(Vector3 position)
 		{
-			var clone = default(GameObject);
-
-			TrySpawn(position, rotation, parent, worldPositionStays, ref clone);
-
-			return clone;
+			var clone = default(GameObject); TrySpawn(ref clone, position, transform.localRotation);
 		}
 
-		/// <summary>This will either spawn a previously despanwed/preloaded clone, recycle one, create a new one, or return null.</summary>
-		public bool TrySpawn(Vector3 position, Quaternion rotation, Transform parent, bool worldPositionStays, ref GameObject clone)
+		/// <summary>This will either spawn a previously despawned/preloaded clone, recycle one, create a new one, or return null.</summary>
+		public GameObject Spawn(Transform parent, bool worldPositionStays = false)
+		{
+			var clone = default(GameObject); TrySpawn(ref clone, parent, worldPositionStays); return clone;
+		}
+
+		/// <summary>This will either spawn a previously despawned/preloaded clone, recycle one, create a new one, or return null.</summary>
+		public GameObject Spawn(Vector3 position, Quaternion rotation, Transform parent = null)
+		{
+			var clone = default(GameObject); TrySpawn(ref clone, position, rotation, parent); return clone;
+		}
+
+		/// <summary>This will either spawn a previously despawned/preloaded clone, recycle one, create a new one, or return null.</summary>
+		public bool TrySpawn(ref GameObject clone, Transform parent, bool worldPositionStays = false)
+		{
+			if (prefab == null) { if (warnings == true) Debug.LogWarning("You're attempting to spawn from a pool with a null prefab", this); return false; }
+			if (parent != null && worldPositionStays == true)
+			{
+				return TrySpawn(ref clone, prefab.transform.position, Quaternion.identity, Vector3.one, parent, worldPositionStays);
+			}
+			return TrySpawn(ref clone, transform.localPosition, transform.localRotation, transform.localScale, parent, worldPositionStays);
+		}
+
+		/// <summary>This will either spawn a previously despawned/preloaded clone, recycle one, create a new one, or return null.</summary>
+		public bool TrySpawn(ref GameObject clone, Vector3 position, Quaternion rotation, Transform parent = null)
+		{
+			if (prefab == null) { if (warnings == true) Debug.LogWarning("You're attempting to spawn from a pool with a null prefab", this); return false; }
+			if (parent != null)
+			{
+				position = parent.InverseTransformPoint(position);
+				rotation = Quaternion.Inverse(parent.rotation) * rotation;
+			}
+			return TrySpawn(ref clone, position, rotation, prefab.transform.localScale, parent, false);
+		}
+
+		/// <summary>This will either spawn a previously despawned/preloaded clone, recycle one, create a new one, or return null.</summary>
+		public bool TrySpawn(ref GameObject clone)
+		{
+			if (prefab == null) { if (warnings == true) Debug.LogWarning("You're attempting to spawn from a pool with a null prefab", this); return false; }
+			var transform = prefab.transform;
+			return TrySpawn(ref clone, transform.localPosition, transform.localRotation, transform.localScale, null, false);
+		}
+
+		/// <summary>This will either spawn a previously despawned/preloaded clone, recycle one, create a new one, or return null.</summary>
+		public bool TrySpawn(ref GameObject clone, Vector3 localPosition, Quaternion localRotation, Vector3 localScale, Transform parent, bool worldPositionStays)
 		{
 			if (prefab != null)
 			{
-				// Spawn a previously despanwed/preloaded clone?
+				// Spawn a previously despawned/preloaded clone?
 				for (var i = despawnedClones.Count - 1; i >= 0; i--)
 				{
 					clone = despawnedClones[i];
@@ -195,21 +269,21 @@ namespace Lean.Pool
 
 					if (clone != null)
 					{
-						SpawnClone(clone, position, rotation, parent, worldPositionStays);
+						SpawnClone(clone, localPosition, localRotation, localScale, parent, worldPositionStays);
 
 						return true;
 					}
 
-					if (Warnings == true) Debug.LogWarning("This pool contained a null despawned clone, did you accidentally destroy it?", this);
+					if (warnings == true) Debug.LogWarning("This pool contained a null despawned clone, did you accidentally destroy it?", this);
 				}
 
 				// Make a new clone?
-				if (Capacity <= 0 || Total < Capacity)
+				if (capacity <= 0 || Total < capacity)
 				{
-					clone = CreateClone(position, rotation, parent, worldPositionStays);
+					clone = CreateClone(localPosition, localRotation, localScale, parent, worldPositionStays);
 
 					// Add clone to spawned list
-					if (Recycle == true)
+					if (recycle == true)
 					{
 						spawnedClonesList.Add(clone);
 					}
@@ -218,8 +292,11 @@ namespace Lean.Pool
 						spawnedClonesHashSet.Add(clone);
 					}
 
-					// Activate
-					clone.SetActive(true);
+					// Activate?
+					if (strategy == StrategyType.ActivateAndDeactivate)
+					{
+						clone.SetActive(true);
+					}
 
 					// Notifications
 					InvokeOnSpawn(clone);
@@ -228,16 +305,16 @@ namespace Lean.Pool
 				}
 
 				// Recycle?
-				if (Recycle == true && TryDespawnOldest(ref clone, false) == true)
+				if (recycle == true && TryDespawnOldest(ref clone, false) == true)
 				{
-					SpawnClone(clone, position, rotation, parent, worldPositionStays);
+					SpawnClone(clone, localPosition, localRotation, localScale, parent, worldPositionStays);
 
 					return true;
 				}
 			}
 			else
 			{
-				if (Warnings == true) Debug.LogWarning("You're attempting to spawn from a pool with a null prefab", this);
+				if (warnings == true) Debug.LogWarning("You're attempting to spawn from a pool with a null prefab", this);
 			}
 
 			return false;
@@ -270,7 +347,7 @@ namespace Lean.Pool
 					return true;
 				}
 
-				if (Warnings == true) Debug.LogWarning("This pool contained a null spawned clone, did you accidentally destroy it?", this);
+				if (warnings == true) Debug.LogWarning("This pool contained a null spawned clone, did you accidentally destroy it?", this);
 			}
 
 			return false;
@@ -334,7 +411,41 @@ namespace Lean.Pool
 			}
 			else
 			{
-				if (Warnings == true) Debug.LogWarning("You're attempting to despawn a null gameObject", this);
+				if (warnings == true) Debug.LogWarning("You're attempting to despawn a null gameObject", this);
+			}
+		}
+
+		/// <summary>This allows you to remove all references to the specified clone from this pool.
+		/// A detached clone will act as a normal GameObject, requiring you to manually destroy or otherwise manage it.
+		/// NOTE: If this clone has been despawned then it will still be parented to the pool.</summary>
+		public void Detach(GameObject clone)
+		{
+			if (clone != null)
+			{
+				if (spawnedClonesHashSet.Remove(clone) == true || spawnedClonesList.Remove(clone) == true || despawnedClones.Remove(clone) == true)
+				{
+					// Remove the link between this clone and this pool if it hasn't already been
+					LeanPool.Links.Remove(clone);
+
+					// If this clone was marked for delayed despawn, remove it
+					for (var i = delays.Count - 1; i >= 0; i--)
+					{
+						var delay = delays[i];
+
+						if (delay.Clone == clone)
+						{
+							delays.RemoveAt(i);
+						}
+					}
+				}
+				else
+				{
+					if (warnings == true) Debug.LogWarning("You're attempting to detach a GameObject that wasn't spawned from this pool.", clone);
+				}
+			}
+			else
+			{
+				if (warnings == true) Debug.LogWarning("You're attempting to detach a null GameObject", this);
 			}
 		}
 
@@ -345,58 +456,99 @@ namespace Lean.Pool
 			if (prefab != null)
 			{
 				// Create clone
-				var clone = CreateClone(Vector3.zero, Quaternion.identity, null, false);
+				var clone = CreateClone(Vector3.zero, Quaternion.identity, Vector3.one, null, false);
 
 				// Add clone to despawned list
 				despawnedClones.Add(clone);
 
 				// Deactivate it
-				clone.SetActive(false);
+				if (strategy == StrategyType.ActivateAndDeactivate)
+				{
+					clone.SetActive(false);
 
-				// Move it under this GO
-				clone.transform.SetParent(transform, false);
+					clone.transform.SetParent(transform, false);
+				}
+				else
+				{
+					clone.transform.SetParent(DeactivatedChild, false);
+				}
 
-				if (Warnings == true && Capacity > 0 && Total > Capacity) Debug.LogWarning("You've preloaded more than the pool capacity, please verify you're preloading the intended amount.", this);
+				if (warnings == true && capacity > 0 && Total > capacity) Debug.LogWarning("You've preloaded more than the pool capacity, please verify you're preloading the intended amount.", this);
 			}
 			else
 			{
-				if (Warnings == true) Debug.LogWarning("Attempting to preload a null prefab.", this);
+				if (warnings == true) Debug.LogWarning("Attempting to preload a null prefab.", this);
 			}
 		}
 
-		/// <summary>This will preload the pool based on the Preload setting.</summary>
+		/// <summary>This will preload the pool based on the <b>Preload</b> setting.</summary>
 		[ContextMenu("Preload All")]
 		public void PreloadAll()
 		{
-			if (Preload > 0)
+			if (preload > 0)
 			{
 				if (prefab != null)
 				{
-					for (var i = Total; i < Preload; i++)
+					for (var i = Total; i < preload; i++)
 					{
 						PreloadOneMore();
 					}
 				}
-				else if (Warnings == true)
+				else if (warnings == true)
 				{
-					if (Warnings == true) Debug.LogWarning("Attempting to preload a null prefab", this);
+					if (warnings == true) Debug.LogWarning("Attempting to preload a null prefab", this);
+				}
+			}
+		}
+
+		/// <summary>This will destroy all preloaded or despawned clones. This is useful if you've despawned more prefabs than you likely need, and want to free up some memory.</summary>
+		[ContextMenu("Clean")]
+		public void Clean()
+		{
+			for (var i = despawnedClones.Count - 1; i >= 0; i--)
+			{
+				DestroyImmediate(despawnedClones[i]);
+			}
+
+			despawnedClones.Clear();
+		}
+
+		/// <summary>This method will clear and fill the specified list with the specified clones from this pool.</summary>
+		public void GetClones(List<GameObject> gameObjects, bool addSpawnedClones = true, bool addDespawnedClones = true)
+		{
+			if (gameObjects != null)
+			{
+				gameObjects.Clear();
+
+				if (addSpawnedClones == true)
+				{
+					gameObjects.AddRange(spawnedClonesList);
+					gameObjects.AddRange(spawnedClonesHashSet);
+				}
+
+				if (addDespawnedClones == true)
+				{
+					gameObjects.AddRange(despawnedClones);
 				}
 			}
 		}
 
 		protected virtual void Awake()
 		{
-			PreloadAll();
-
-			if (Persist == true)
+			if (Application.isPlaying == true)
 			{
-				DontDestroyOnLoad(this);
+				PreloadAll();
+
+				if (persist == true)
+				{
+					DontDestroyOnLoad(this);
+				}
 			}
 		}
 
 		protected virtual void OnEnable()
 		{
-			node = Instances.AddLast(this);
+			instancesNode = Instances.AddLast(this);
 
 			RegisterPrefab();
 		}
@@ -405,9 +557,27 @@ namespace Lean.Pool
 		{
 			UnregisterPrefab();
 
-			Instances.Remove(node);
+			Instances.Remove(instancesNode); instancesNode = null;
+		}
 
-			node = null;
+		protected virtual void OnDestroy()
+		{
+			// If OnDestroy is called then the scene is likely changing, so we detach the spawned prefabs from the global links dictionary to prevent issues.
+			foreach (var clone in spawnedClonesList)
+			{
+				if (clone != null)
+				{
+					LeanPool.Detach(clone, false);
+				}
+			}
+
+			foreach (var clone in spawnedClonesHashSet)
+			{
+				if (clone != null)
+				{
+					LeanPool.Detach(clone, false);
+				}
+			}
 		}
 
 		protected virtual void Update()
@@ -435,7 +605,7 @@ namespace Lean.Pool
 				}
 				else
 				{
-					if (Warnings == true) Debug.LogWarning("Attempting to update the delayed destruction of a prefab clone that no longer exists, did you accidentally delete it?", this);
+					if (warnings == true) Debug.LogWarning("Attempting to update the delayed destruction of a prefab clone that no longer exists, did you accidentally destroy it?", this);
 				}
 			}
 		}
@@ -508,7 +678,7 @@ namespace Lean.Pool
 			}
 			else
 			{
-				if (Warnings == true) Debug.LogWarning("You're attempting to despawn a GameObject that wasn't spawned from this pool, make sure your Spawn and Despawn calls match.", clone);
+				if (warnings == true) Debug.LogWarning("You're attempting to despawn a GameObject that wasn't spawned from this pool, make sure your Spawn and Despawn calls match.", clone);
 			}
 		}
 
@@ -524,31 +694,23 @@ namespace Lean.Pool
 			InvokeOnDespawn(clone);
 
 			// Deactivate it
-			clone.SetActive(false);
+			if (strategy == StrategyType.ActivateAndDeactivate)
+			{
+				clone.SetActive(false);
 
-			// Move it under this GO
-			clone.transform.SetParent(transform, false);
+				clone.transform.SetParent(transform, false);
+			}
+			else
+			{
+				clone.transform.SetParent(DeactivatedChild, false);
+			}
 		}
 
-		private GameObject CreateClone(Vector3 position, Quaternion rotation, Transform parent, bool worldPositionStays)
+		private GameObject CreateClone(Vector3 localPosition, Quaternion localRotation, Vector3 localScale, Transform parent, bool worldPositionStays)
 		{
-			if (parent != null)
-			{
-				if (worldPositionStays == true)
-				{
-					//position = parent.InverseTransformPoint(position);
-					//rotation = Quaternion.Inverse(parent.rotation) * rotation;
-				}
-				else
-				{
-					position = parent.TransformPoint(position);
-					rotation = parent.rotation * rotation;
-				}
-			}
+			var clone = DoInstantiate(prefab, localPosition, localRotation, localScale, parent, worldPositionStays);
 
-			var clone = Instantiate(prefab, position, rotation, parent);
-
-			if (Stamp == true)
+			if (stamp == true)
 			{
 				clone.name = prefab.name + " " + Total;
 			}
@@ -560,10 +722,48 @@ namespace Lean.Pool
 			return clone;
 		}
 
-		private void SpawnClone(GameObject clone, Vector3 position, Quaternion rotation, Transform parent, bool worldPositionStays)
+		private GameObject DoInstantiate(GameObject prefab, Vector3 localPosition, Quaternion localRotation, Vector3 localScale, Transform parent, bool worldPositionStays)
+		{
+#if UNITY_EDITOR
+			if (Application.isPlaying == false && UnityEditor.PrefabUtility.IsPartOfRegularPrefab(prefab) == true)
+			{
+				if (worldPositionStays == true)
+				{
+					return (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(prefab, parent);
+				}
+				else
+				{
+					var clone = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(prefab, parent);
+
+					clone.transform.localPosition = localPosition;
+					clone.transform.localRotation = localRotation;
+					clone.transform.localScale    = localScale;
+
+					return clone;
+				}
+			}
+#endif
+
+			if (worldPositionStays == true)
+			{
+				return Instantiate(prefab, parent, true);
+			}
+			else
+			{
+				var clone = Instantiate(prefab, localPosition, localRotation, parent);
+
+				clone.transform.localPosition = localPosition;
+				clone.transform.localRotation = localRotation;
+				clone.transform.localScale    = localScale;
+
+				return clone;
+			}
+		}
+
+		private void SpawnClone(GameObject clone, Vector3 localPosition, Quaternion localRotation, Vector3 localScale, Transform parent, bool worldPositionStays)
 		{
 			// Register
-			if (Recycle == true)
+			if (recycle == true)
 			{
 				spawnedClonesList.Add(clone);
 			}
@@ -575,7 +775,13 @@ namespace Lean.Pool
 			// Update transform
 			var cloneTransform = clone.transform;
 
-			cloneTransform.SetParent(parent, false);
+			cloneTransform.SetParent(null, false);
+
+			cloneTransform.localPosition = localPosition;
+			cloneTransform.localRotation = localRotation;
+			cloneTransform.localScale    = localScale;
+
+			cloneTransform.SetParent(parent, worldPositionStays);
 
 			// Make sure it's in the current scene
 			if (parent == null)
@@ -583,19 +789,11 @@ namespace Lean.Pool
 				SceneManager.MoveGameObjectToScene(clone, SceneManager.GetActiveScene());
 			}
 
-			if (worldPositionStays == true)
-			{
-				cloneTransform.position = position;
-				cloneTransform.rotation = rotation;
-			}
-			else
-			{
-				cloneTransform.localPosition = position;
-				cloneTransform.localRotation = rotation;
-			}
-
 			// Activate
-			clone.SetActive(true);
+			if (strategy == StrategyType.ActivateAndDeactivate)
+			{
+				clone.SetActive(true);
+			}
 
 			// Notifications
 			InvokeOnSpawn(clone);
@@ -603,7 +801,7 @@ namespace Lean.Pool
 
 		private void InvokeOnSpawn(GameObject clone)
 		{
-			switch (Notification)
+			switch (notification)
 			{
 				case NotificationType.SendMessage: clone.SendMessage("OnSpawn", SendMessageOptions.DontRequireReceiver); break;
 				case NotificationType.BroadcastMessage: clone.BroadcastMessage("OnSpawn", SendMessageOptions.DontRequireReceiver); break;
@@ -614,7 +812,7 @@ namespace Lean.Pool
 
 		private void InvokeOnDespawn(GameObject clone)
 		{
-			switch (Notification)
+			switch (notification)
 			{
 				case NotificationType.SendMessage: clone.SendMessage("OnDespawn", SendMessageOptions.DontRequireReceiver); break;
 				case NotificationType.BroadcastMessage: clone.BroadcastMessage("OnDespawn", SendMessageOptions.DontRequireReceiver); break;
@@ -640,7 +838,7 @@ namespace Lean.Pool
 
 		public void OnAfterDeserialize()
 		{
-			if (Recycle == false)
+			if (recycle == false)
 			{
 				for (var i = spawnedClonesList.Count - 1; i >= 0; i--)
 				{
@@ -656,47 +854,86 @@ namespace Lean.Pool
 }
 
 #if UNITY_EDITOR
-namespace Lean.Pool
+namespace Lean.Pool.Editor
 {
+	using UnityEditor;
+	using TARGET = LeanGameObjectPool;
+
 	[CanEditMultipleObjects]
-	[CustomEditor(typeof(LeanGameObjectPool))]
-	public class LeanGameObjectPool_Inspector : LeanInspector<LeanGameObjectPool>
+	[CustomEditor(typeof(TARGET))]
+	public class LeanGameObjectPool_Editor : LeanEditor
 	{
-		protected override void DrawInspector()
+		private static List<GameObject> tempClones = new List<GameObject>();
+
+		[System.NonSerialized] TARGET tgt; [System.NonSerialized] TARGET[] tgts;
+
+		protected override void OnInspector()
 		{
-			BeginError(Any(t => t.Prefab == null));
+			GetTargets(out tgt, out tgts);
+
+			BeginError(Any(tgts, t => t.Prefab == null));
 				if (Draw("prefab", "The prefab this pool controls.") == true)
 				{
-					Each(t => { t.Prefab = (GameObject)serializedObject.FindProperty("prefab").objectReferenceValue; }, true);
+					Each(tgts, t => { t.Prefab = (GameObject)serializedObject.FindProperty("prefab").objectReferenceValue; }, true);
 				}
 			EndError();
-			Draw("Notification", "If you need to peform a special action when a prefab is spawned or despawned, then this allows you to control how that action is performed. None = If you use this then you must rely on the OnEnable and OnDisable messages. SendMessage = The prefab clone is sent the OnSpawn and OnDespawn messages. BroadcastMessage = The prefab clone and all its children are sent the OnSpawn and OnDespawn messages. IPoolable = The prefab clone's components implementing IPoolable are called. Broadcast IPoolable = The prefab clone and all its child components implementing IPoolable are called.");
-			Draw("Preload", "Should this pool preload some clones?");
-			Draw("Capacity", "Should this pool have a maximum amount of spawnable clones?");
-			Draw("Recycle", "If the pool reaches capacity, should new spawns force older ones to despawn?");
-			Draw("Persist", "Should this pool be marked as DontDestroyOnLoad?");
-			Draw("Stamp", "Should the spawned clones have their clone index appended to their name?");
-			Draw("Warnings", "Should detected issues be output to the console?");
+			Draw("notification", "If you need to perform a special action when a prefab is spawned or despawned, then this allows you to control how that action is performed. None = If you use this then you must rely on the OnEnable and OnDisable messages. SendMessage = The prefab clone is sent the OnSpawn and OnDespawn messages. BroadcastMessage = The prefab clone and all its children are sent the OnSpawn and OnDespawn messages. IPoolable = The prefab clone's components implementing IPoolable are called. Broadcast IPoolable = The prefab clone and all its child components implementing IPoolable are called.");
+			Draw("strategy", "This allows you to control how spawned/despawned GameObjects will be handled. The DeactivateViaHierarchy mode should be used if you need to maintain your prefab's de/activation state.\n\nActivateAndDeactivate = Despawned clones will be deactivated and placed under this GameObject.\n\nDeactivateViaHierarchy = Despawned clones will be placed under a deactivated GameObject and left alone.");
+			Draw("preload", "Should this pool preload some clones?");
+			Draw("capacity", "Should this pool have a maximum amount of spawnable clones?");
+			Draw("recycle", "If the pool reaches capacity, should new spawns force older ones to despawn?");
+			Draw("persist", "Should this pool be marked as DontDestroyOnLoad?");
+			Draw("stamp", "Should the spawned clones have their clone index appended to their name?");
+			Draw("warnings", "Should detected issues be output to the console?");
 
-			EditorGUILayout.Separator();
+			Separator();
 
-			EditorGUI.BeginDisabledGroup(true);
-				EditorGUILayout.IntField("Spawned", Target.Spawned);
-				EditorGUILayout.IntField("Despawned", Target.Despawned);
-				EditorGUILayout.IntField("Total", Target.Total);
-			EditorGUI.EndDisabledGroup();
+			BeginDisabled();
+				DrawClones("Spawned", true, false, "notification");
+				DrawClones("Despawned", false, true, "strategy");
+				DrawClones("Total", true, true, "preload");
+			EndDisabled();
+
+			if (Application.isPlaying == false)
+			{
+				if (Any(tgts, t => t.DespawnedClonesMatch == false))
+				{
+					Warning("Your preloaded clones no longer match the Prefab.");
+				}
+			}
 		}
 
-		[MenuItem("GameObject/Lean/Pool", false, 1)]
+		private void DrawClones(string title, bool spawned, bool despawned, string propertyName)
+		{
+			var property = serializedObject.FindProperty(propertyName);
+			var rect     = EditorGUILayout.BeginVertical(); EditorGUILayout.LabelField(string.Empty, GUILayout.Height(EditorGUI.GetPropertyHeight(property))); EditorGUILayout.EndVertical();
+			var rectF    = rect; rectF.height = 16;
+
+			tgt.GetClones(tempClones, spawned, despawned);
+
+			property.isExpanded = EditorGUI.Foldout(rectF, property.isExpanded, GUIContent.none);
+
+			UnityEditor.EditorGUI.IntField(rect, title, tempClones.Count);
+
+			if (property.isExpanded == true)
+			{
+				foreach (var clone in tempClones)
+				{
+					EditorGUILayout.ObjectField(GUIContent.none, clone, typeof(GameObject), true);
+				}
+			}
+		}
+
+		[UnityEditor.MenuItem("GameObject/Lean/Pool", false, 1)]
 		private static void CreateLocalization()
 		{
 			var gameObject = new GameObject(typeof(LeanGameObjectPool).Name);
 
-			Undo.RegisterCreatedObjectUndo(gameObject, "Create LeanGameObjectPool");
+			UnityEditor.Undo.RegisterCreatedObjectUndo(gameObject, "Create LeanGameObjectPool");
 
 			gameObject.AddComponent<LeanGameObjectPool>();
 
-			Selection.activeGameObject = gameObject;
+			UnityEditor.Selection.activeGameObject = gameObject;
 		}
 	}
 }

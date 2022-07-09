@@ -1,0 +1,23 @@
+게임시작:
+	플레이어의 시작 스테이터스 세팅
+	플레이어의 시작 덱 세팅
+	for n <- 1 to K: (K=던전 수)
+		n번째 던전 세팅
+		플레이어의 pos를 시작 지점에 세팅
+
+		while (pos가 goal이 아님)
+		switch 행동:
+			case 다음 노드 m으로 이동:
+				노드 실행(m);
+			case 기타 행동:
+				break;
+		if 게임오버:
+			break;
+
+
+노드 실행(m):
+	switch 노드 종류:
+		case 전투:
+			result <- 전투 실행(m);
+			result에 따라 보상 or 게임오버
+			

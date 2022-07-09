@@ -8,4 +8,7 @@ using UnityEngine;
 /// </summary>
 public class SessionDice
 {
+    public int staticDataIndex;
+
+    public List<int> faces = new List<int>();
 }

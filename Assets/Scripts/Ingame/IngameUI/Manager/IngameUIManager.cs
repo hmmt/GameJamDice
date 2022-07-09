@@ -11,6 +11,7 @@ public class IngameUIManager : MonoBehaviour
     [Header("UI inspector")]
     [SerializeField] UIButton rollButton;
     [SerializeField] IngameRolledInfo[] rolledInfos;
+    [SerializeField] DiceAnimatator diceAnimator;
 
     public bool waiting { private set; get; }
 
@@ -54,47 +55,43 @@ public class IngameUIManager : MonoBehaviour
         return this;
     }
 
-    IEnumerator ShowRollDiceList(List<DiceConsequenceData> list, Action onComplete)
+    IEnumerator ShowRollDice(DiceConsequenceData dcdata, int diceIndex, Action onComplete)
     {
-        foreach (var rolledInfo in rolledInfos)
-        {
-            rolledInfo.SetToEmpty();
-        }
-
-        yield return null;
         // 대충 굴리는 연출
         waiting = true;
-
         yield return null;
 
-        waiting = false;
-
-        // 연출 완료
-        for (int i = 0; i < rolledInfos.Length; i++)
+        diceAnimator.PlayAnimation(dcdata.behaviourState, dcdata.actingPower, diceIndex, delegate ()
         {
-            if (i < list.Count)
+            waiting = false;
+            try
             {
-                rolledInfos[i].SetDice(list[i]);
+                rolledInfos[diceIndex].SetDice(dcdata);
             }
-            else
+            catch(Exception e)
             {
-                rolledInfos[i].SetToEmpty();
+
             }
-        }
-        onComplete.Invoke();
+        });
+
     }
 
-    #region callback
+#region callback
     private void OnStartTurn(UnitStatusData unit)
     {
         if (rollButton != null)
             rollButton.gameObject.SetActive(true);
+
+        for (int i = 0; i < rolledInfos.Length; i++)
+        {
+            rolledInfos[i].SetToEmpty();
+        }
     }
-    private void OnRollCompleteTurn(UnitStatusData unit, List<DiceConsequenceData> list)
+    private void OnRollCompleteTurn(UnitStatusData unit, DiceConsequenceData dcdata, int diceIndex)
     {
         if (rollButton != null)
             rollButton.gameObject.SetActive(false);
-        StartCoroutine(ShowRollDiceList(list, OnCompleteMyRollEffect));
+        StartCoroutine(ShowRollDice(dcdata, diceIndex, OnCompleteMyRollEffect));
     }
     private void OnCompleteMyRollEffect()
     {
@@ -105,10 +102,10 @@ public class IngameUIManager : MonoBehaviour
     {
         //rollButton.gameObject.SetActive(true);
     }
-    #endregion
+#endregion
 
 
-    #region event trigger
+#region event trigger
     public void OnClickRollTheDice()
     {
         IngameLogicManager.instance.RollMyDice();
@@ -118,5 +115,5 @@ public class IngameUIManager : MonoBehaviour
     {
     }
 
-    #endregion
+#endregion
 }

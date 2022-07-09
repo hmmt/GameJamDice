@@ -30,7 +30,7 @@ public class IngameLogicManager : MonoBehaviour
     event Action onEndBattle;
 
     event Action<UnitStatusData> onStartTurn;
-    event Action<UnitStatusData, List<DiceConsequenceData>> onRollCompleteTurn;
+    event Action<UnitStatusData, DiceConsequenceData, int> onRollCompleteTurn;
     event Action<UnitStatusData, int> onReadyToUseDice;
     event Action<UnitStatusData, DiceConsequenceData, List<ActionResultData>> onUseDice;
     event Action<UnitStatusData> onEndTurn;
@@ -200,35 +200,38 @@ public class IngameLogicManager : MonoBehaviour
         turnInfo = new TurnInfo();
         turnInfo.unit = turnOrderQueue.Dequeue();
 
-
-        if(!turnInfo.unit.isPlayer)
-        {
-            // 플레이어가 아니면 자동 굴리기
-            turnInfo.diceRolled = true;
-        }
-
-        //Debug.Log(1);
-        InvokeOnStartTurn(turnInfo.unit);
-        //Debug.Log(2);
-        while (!turnInfo.diceRolled)
-            yield return null;
-
-        //Debug.Log(3);
-
-
-        // 주사위 굴리기
-        var consequnceList = new List<DiceConsequenceData>();
-        playerData.deck.ForEach(deck =>
-        {
-            consequnceList.Add(new DiceConsequenceData(deck.behaviourDice.GetRandomBehaviourState(),
-                                                       deck.actingPowerDice.GetRandomActingPower()));
-        });
-
         turnInfo.diceResultList.Clear();
-        turnInfo.diceResultList.AddRange(consequnceList);
         turnInfo.rolledDiceIndex = 0;
 
-        InvokeOnCompleteRollDice(turnInfo.unit, consequnceList);
+        InvokeOnStartTurn(turnInfo.unit);
+
+        for (int i=0; i<playerData.deck.Count; i++)
+        {
+            if (!turnInfo.unit.isPlayer)
+            {
+                // 플레이어가 아니면 자동 굴리기
+                turnInfo.diceRolled = true;
+            }
+            else
+            {
+                turnInfo.diceRolled = false;
+            }
+
+            //Debug.Log(1);
+            //Debug.Log(2);
+            while (!turnInfo.diceRolled)
+                yield return null;
+
+            var dcdata = new DiceConsequenceData(playerData.deck[i].behaviourDice.GetRandomBehaviourState(),
+                                                       playerData.deck[i].actingPowerDice.GetRandomActingPower());
+
+            turnInfo.diceResultList.Add(dcdata);
+
+            InvokeOnCompleteRollDice(turnInfo.unit, dcdata, i);
+
+            while (WaitEffectEnd())
+                yield return null;
+        }
 
         //Debug.Log(4);
         // 주사위 굴리는 연출 대기
@@ -424,14 +427,14 @@ public class IngameLogicManager : MonoBehaviour
         return this;
     }
 
-    public IngameLogicManager AddActionOnRollCompleteTurn(Action<UnitStatusData, List<DiceConsequenceData>> callback)
+    public IngameLogicManager AddActionOnRollCompleteTurn(Action<UnitStatusData, DiceConsequenceData, int> callback)
     {
         onRollCompleteTurn -= callback;
         onRollCompleteTurn += callback;
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnRollCompleteTurn(Action<UnitStatusData, List<DiceConsequenceData>> callback)
+    public IngameLogicManager RemoveActionOnRollCompleteTurn(Action<UnitStatusData, DiceConsequenceData, int> callback)
     {
         onRollCompleteTurn -= callback;
         return this;
@@ -480,9 +483,9 @@ public class IngameLogicManager : MonoBehaviour
         onStartTurn?.Invoke(unit);
     }
 
-    public void InvokeOnCompleteRollDice(UnitStatusData unit, List<DiceConsequenceData> sessionDecks)
+    public void InvokeOnCompleteRollDice(UnitStatusData unit, DiceConsequenceData sessionDecks, int diceIndex)
     {
-        onRollCompleteTurn?.Invoke(unit, sessionDecks);
+        onRollCompleteTurn?.Invoke(unit, sessionDecks, diceIndex);
     }
 
     public void InvokeOnUseDice(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> actionResultList)

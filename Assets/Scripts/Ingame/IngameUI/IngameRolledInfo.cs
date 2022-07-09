@@ -5,13 +5,13 @@ using UnityEngine.UI;
 
 public class IngameRolledInfo : MonoBehaviour
 {
-    [SerializeField] Text diceType;
-    [SerializeField] Text diceNumber;
+    [SerializeField] Image diceTypeImage;
+    [SerializeField] TMPro.TextMeshProUGUI diceNumber;
     
 
     public void SetDice(DiceConsequenceData data)
     {
-
+#if false
         switch ( data.behaviourState)
         {
             case BehaviourState.none:
@@ -33,13 +33,15 @@ public class IngameRolledInfo : MonoBehaviour
                 diceType.text = "¿¬¼â";
                 break;
         }
-
+#endif
+        diceTypeImage.enabled = true;
+        diceTypeImage.sprite = SpriteManager.instance.GetBevaiourIconSprite((int)data.behaviourState);
         diceNumber.text = data.actingPower.ToString();
     }
 
     public void SetToEmpty()
     {
-        diceType.text = "";
+        diceTypeImage.enabled = false;
         diceNumber.text = "";
     }
 }

@@ -15,6 +15,12 @@ public class StaticDataManager : MonoBehaviour
 
     public S3BehaviourDiceData GetBehaviourDice(Func<S3BehaviourDiceData, bool> predicate)
         => GetS3Data<StaticS3BehaviourDiceData>().datas.Find((data) => predicate(data));
+    public S3ActingPowerDiceData GetActionPowerDice(Func<S3ActingPowerDiceData, bool> predicate)
+        => GetS3Data<StaticS3ActingPowerDiceData>().datas.Find((data) => predicate(data));
+
+
+    public S3MonsterData GetMonster(Func<S3MonsterData, bool> predicate)
+        => GetS3Data<StaticS3MonsterData>().datas.Find((data) => predicate(data));
 
     public T GetS3Data<T>() where T : class
         => staticDataList.FirstOrDefault(data => data is T) as T;

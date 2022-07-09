@@ -22,4 +22,30 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   textDataPath: StaticS3MonsterData
-  datas: []
+  datas:
+  - index: 0
+    monsterName: "\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD"
+    hitpoint: 30
+    behaviourDice_1: 1
+    behaviourDice_2: 601
+    behaviourDice_3: -1
+    behaviourDice_4: -1
+    behaviourDice_5: -1
+    actingPowerDice_1: 2
+    actingPowerDice_2: 322
+    actingPowerDice_3: -1
+    actingPowerDice_4: -1
+    actingPowerDice_5: -1
+  - index: 1
+    monsterName: "\uFFFD\uFFFD\uFFFD\uFFFD"
+    hitpoint: 50
+    behaviourDice_1: 869
+    behaviourDice_2: 1152
+    behaviourDice_3: -1
+    behaviourDice_4: -1
+    behaviourDice_5: -1
+    actingPowerDice_1: 2562
+    actingPowerDice_2: 662
+    actingPowerDice_3: -1
+    actingPowerDice_4: -1
+    actingPowerDice_5: -1

@@ -7,7 +7,7 @@ public class HUDDiceEffect : MonoBehaviour
 {
     [SerializeField] RectTransform rtLeftDice, rtRightDice;
 
-    public HUDDamageEffect PlayDiceEffect()
+    public HUDDiceEffect PlayDiceEffect()
     {
         rtLeftDice.DOKill();
         rtRightDice.DOKill();
@@ -19,9 +19,10 @@ public class HUDDiceEffect : MonoBehaviour
         // sequence2 = left 127, 3 / right 141, -25
         // sequence3 = left -68, -20 / right 89, -20
 
-        rtLeftDice.DOJumpAnchorPos(new Vector2(252f, 26f), 10f, 1, 0.75f).SetEase(Ease.InOutQuad).OnComplete(() =>
-        {
-            rtLeftDice.DOJumpAnchorPos()
-        })
+        //rtLeftDice.DOJumpAnchorPos(new Vector2(252f, 26f), 10f, 1, 0.75f).SetEase(Ease.InOutQuad).OnComplete(() =>
+        //{
+        //    rtLeftDice.DOJumpAnchorPos()
+        //})
+        return this;
     }
 }

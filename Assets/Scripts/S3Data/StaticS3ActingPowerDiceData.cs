@@ -38,4 +38,7 @@ public class S3ActingPowerDiceData : S3DataBase
         diceFace_6 = int.Parse(data[i++]);
         shopPrice = int.Parse(data[i++]);
     }
+
+    public S3ActingPowerDiceData ToMemberWiseClone()
+        => MemberwiseClone() as S3ActingPowerDiceData;
 }

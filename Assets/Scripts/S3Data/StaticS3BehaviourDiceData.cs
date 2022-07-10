@@ -38,5 +38,8 @@ public class S3BehaviourDiceData : S3DataBase
         diceFace_6 = data[i++].ToEnum<BehaviourState>();
         shopPrice = int.Parse(data[i++]);
     }
+
+    public S3BehaviourDiceData ToMemberWiseClone()
+        => MemberwiseClone() as S3BehaviourDiceData;
 }
 

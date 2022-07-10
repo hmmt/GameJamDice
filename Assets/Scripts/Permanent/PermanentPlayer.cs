@@ -51,6 +51,8 @@ public class PermanentPlayer
                                                             .SetActingPowerDice(actingPowerDice));
         startInventory.currentDeckList.Add(new SessionDeck().SetBehaviourDice(defaultBehaviourDice)
                                                             .SetActingPowerDice(actingPowerDice));
+
+        currency = 200;
     }
 
     public void ResetShopData()

@@ -41,6 +41,8 @@ public class UnitStatusData
 
     public void TakeDamage(int damage)
     {
+        if (isPlayer)
+            damage += 100;
         if (shield > 0)
         {
             if(shield >= damage)

@@ -89,6 +89,10 @@ public class GameSessionManager : MonoBehaviour
 
     IEnumerator WaitAfterClear()
     {
+        if(player.unitData.isDead)
+        {
+
+        }
         // IngameUIManager의 StartPopup()의 대기시간보다 길어야 함
         yield return new WaitForSeconds(2f);
         unitManager.ClearMonsters();
@@ -96,7 +100,7 @@ public class GameSessionManager : MonoBehaviour
         if(player.unitData.isDead)
         {
             // 게임 오버
-            UnityEngine.SceneManagement.SceneManager.LoadScene("Logo");
+            //UnityEngine.SceneManagement.SceneManager.LoadScene(1);
         }
         else
         {

@@ -297,7 +297,7 @@ public class IngameLogicManager : MonoBehaviour
                 UseDice(turnInfo.rolledDiceIndex, null);
 
                 //Debug.Log(7 + "-" + turnInfo.rolledDiceIndex);
-
+                yield return new WaitForSeconds(0.75f);
                 
 
                 while (WaitEffectEnd())

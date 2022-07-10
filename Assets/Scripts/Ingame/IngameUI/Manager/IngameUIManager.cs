@@ -26,7 +26,9 @@ public class IngameUIManager : MonoBehaviour
     [SerializeField] GameObject myTurnImage;
     [SerializeField] GameObject opponentTurnImage;
     [SerializeField] GameObject winImage;
-    [SerializeField] GameObject loseImage;
+
+
+    [SerializeField] GameObject losePopup;
 
 
     private Turn _lastTurn = Turn.None;
@@ -46,6 +48,7 @@ public class IngameUIManager : MonoBehaviour
     }
     public void Init(IngameLogicManager ingameLogicManager)
     {
+        losePopup.SetActive(false);
         waiting = false;
         _selectedIndex = -1;
         if (rollButton != null)
@@ -137,7 +140,6 @@ public class IngameUIManager : MonoBehaviour
         myTurnImage.SetActive(false);
         opponentTurnImage.SetActive(false);
         winImage.SetActive(false);
-        loseImage.SetActive(false);
 
         alaramRoot.SetActive(true);
         targetPopupImg.SetActive(true);
@@ -152,7 +154,14 @@ public class IngameUIManager : MonoBehaviour
 
     private void OnEndBattle(bool b)
     {
-        StartCoroutine(StartPopup(b ? winImage : loseImage));
+        if(b)
+        {
+            StartCoroutine(StartPopup(winImage));
+        }
+        else
+        {
+            losePopup.SetActive(true);
+        }
     }
     private void OnRollCompleteTurn(UnitStatusData unit, DiceConsequenceData dcdata, int diceIndex)
     {
@@ -201,6 +210,12 @@ public class IngameUIManager : MonoBehaviour
 
     public void OnClickTestButton_battleSkip()
     {
+    }
+
+    public void OnClickGotoTitle()
+    {
+        losePopup.SetActive(false);
+        UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
 
 #endregion

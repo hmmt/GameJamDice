@@ -38,7 +38,7 @@ public class IngamePanelInventory : PopupBase
                            })
                            .SetActionOnClickReleaseActingPower((currentDeck) =>
                            {
-                               if (currentDeck.behaviourDice == null)
+                               if (currentDeck.actingPowerDice == null)
                                    return;
 
                                PermanentPlayer.instance.AddActingPowerDice(currentDeck.actingPowerDice);

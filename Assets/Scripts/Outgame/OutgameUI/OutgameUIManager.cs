@@ -5,6 +5,7 @@ using UnityEngine;
 public class OutgameUIManager : MonoBehaviour
 {
     [SerializeField] PanelInventory panelInventory;
+    [SerializeField] PanelShop panelShop;
 
     public void OnClickOpenPanelInventory()
     {
@@ -15,7 +16,7 @@ public class OutgameUIManager : MonoBehaviour
 
     public void OnClickOpenPanelShop()
     {
-
+        panelShop.Open();
     }
 
     public void OnClickToIngame()

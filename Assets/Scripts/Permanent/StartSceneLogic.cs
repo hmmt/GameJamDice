@@ -9,6 +9,7 @@ public class StartSceneLogic : MonoBehaviour
         if(!PermanentPlayer.instance.initialized)
         {
             InitializePermenentData();
+            PermanentPlayer.instance.ResetShopData();
         }
         StartGame();
     }
@@ -16,6 +17,7 @@ public class StartSceneLogic : MonoBehaviour
     private void InitializePermenentData()
     {
         PermanentPlayer.instance.InitializePlayer();
+
     }
     public void StartGame()
     {
@@ -27,5 +29,6 @@ public class StartSceneLogic : MonoBehaviour
     public void ResetGame()
     {
         InitializePermenentData();
+        PermanentPlayer.instance.ResetShopData();
     }
 }

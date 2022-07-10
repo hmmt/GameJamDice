@@ -46,8 +46,8 @@ public class SessionPlayer
         //}
         foreach (var currentDeck in player.startInventory.currentDeckList)
         {
-            inventory.actingPowerDiceList.Add(currentDeck.actingPowerDice);
-            inventory.behaviourDiceList.Add(currentDeck.behaviourDice);
+            //inventory.actingPowerDiceList.Add(currentDeck.actingPowerDice);
+            //inventory.behaviourDiceList.Add(currentDeck.behaviourDice);
             deck.Add(new SessionDeck().SetBehaviourDice(currentDeck.behaviourDice)
                                       .SetActingPowerDice(currentDeck.actingPowerDice));
         }

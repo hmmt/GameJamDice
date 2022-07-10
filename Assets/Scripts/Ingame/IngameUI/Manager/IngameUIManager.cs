@@ -29,6 +29,7 @@ public class IngameUIManager : MonoBehaviour
 
 
     [SerializeField] GameObject losePopup;
+    [SerializeField] IngamePanelInventory ingamePanelLaboratory;
 
 
     private Turn _lastTurn = Turn.None;
@@ -46,6 +47,14 @@ public class IngameUIManager : MonoBehaviour
             rolledInfo.SetToEmpty();
         }
     }
+
+    public void OnClickPanelLaboratory()
+    {
+        ingamePanelLaboratory.UpdateDiceSummaryList(SessionPlayer.instance.deck)
+                             .UpdateInventory(SessionPlayer.instance.inventory.behaviourDiceList, SessionPlayer.instance.inventory.actingPowerDiceList)
+                             .Open();
+    }
+
     public void Init(IngameLogicManager ingameLogicManager)
     {
         losePopup.SetActive(false);

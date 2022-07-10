@@ -6722,13 +6722,17 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1104389404}
     m_Modifications:
+    - target: {fileID: 92591496163030551, guid: 4f3a56bbcbc9cc743bc9d593c0217b00, type: 3}
+      propertyPath: m_fontSize
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 92591496163030551, guid: 4f3a56bbcbc9cc743bc9d593c0217b00, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 304865424766905633, guid: 4f3a56bbcbc9cc743bc9d593c0217b00, type: 3}
       propertyPath: m_Name
       value: Unit
-      objectReference: {fileID: 0}
-    - target: {fileID: 304865424766905633, guid: 4f3a56bbcbc9cc743bc9d593c0217b00, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 304865424766905634, guid: 4f3a56bbcbc9cc743bc9d593c0217b00, type: 3}
       propertyPath: m_RootOrder

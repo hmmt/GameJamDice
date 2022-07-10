@@ -21,9 +21,18 @@ public class UnitViewer : MonoBehaviour
     [SerializeField] GameObject poisonRoot;
     [SerializeField] TextMeshPro poisonText;
 
+    [SerializeField] GameObject selectMark;
+
     private SpriteSet spriteSet = null;
 
     public UnitStatusData data { private set; get; }
+
+    private System.Action<UnitViewer> onClickCallback;
+
+    public void Init(System.Action<UnitViewer> onClickCallback)
+    {
+        this.onClickCallback = onClickCallback;
+    }
 
     public void SetIngameUnitData(UnitStatusData data)
     {
@@ -145,4 +154,21 @@ public class UnitViewer : MonoBehaviour
     }
 
 
+    public void ShowSelectionMark()
+    {
+        selectMark.SetActive(true);
+    }
+
+    public void HideSelectionMark()
+    {
+        selectMark.SetActive(false);
+    }
+
+
+    #region event trigger
+    public void OnClick()
+    {
+        onClickCallback?.Invoke(this);
+    }
+    #endregion
 }

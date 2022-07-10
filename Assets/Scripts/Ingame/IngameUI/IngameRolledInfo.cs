@@ -2,14 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using System;
 
-public class IngameRolledInfo : MonoBehaviour
+public class IngameRolledInfo : MonoBehaviour, IPointerDownHandler
 {
     [SerializeField] Image diceTypeImage;
     [SerializeField] TMPro.TextMeshProUGUI diceNumber;
-    
 
-    public void SetDice(DiceConsequenceData data)
+    [SerializeField] Image selected;
+
+
+    private Action clickCallback;
+
+    public void SetDice(DiceConsequenceData data, Action onclick = null)
     {
 #if false
         switch ( data.behaviourState)
@@ -34,14 +40,40 @@ public class IngameRolledInfo : MonoBehaviour
                 break;
         }
 #endif
+        diceTypeImage.color = Color.white;
+        diceNumber.color = Color.white;
+
         diceTypeImage.enabled = true;
         diceTypeImage.sprite = SpriteManager.instance.GetBevaiourIconSprite((int)data.behaviourState);
         diceNumber.text = data.actingPower.ToString();
+
+        clickCallback = onclick;
     }
 
     public void SetToEmpty()
     {
         diceTypeImage.enabled = false;
         diceNumber.text = "";
+        if (selected != null)
+            selected.enabled = false;
+
+        clickCallback = null;
+    }
+
+    public void SetToUsed()
+    {
+        diceTypeImage.color = new Color(1, 1, 1, 0.5f);
+        diceNumber.color = new Color(1, 1, 1, 0.5f);
+    }
+
+    public void SetSelected(bool b)
+    {
+        if (selected != null)
+            selected.enabled = b;
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        clickCallback?.Invoke();
     }
 }

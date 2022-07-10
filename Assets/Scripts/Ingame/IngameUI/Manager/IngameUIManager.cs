@@ -29,7 +29,7 @@ public class IngameUIManager : MonoBehaviour
 
 
     [SerializeField] GameObject losePopup;
-    [SerializeField] PanelInventory panelLaboratory;
+    [SerializeField] IngamePanelInventory ingamePanelLaboratory;
 
 
     private Turn _lastTurn = Turn.None;
@@ -50,9 +50,9 @@ public class IngameUIManager : MonoBehaviour
 
     public void OnClickPanelLaboratory()
     {
-        panelLaboratory.UpdateDiceSummaryList(PermanentPlayer.instance.startInventory.currentDeckList)
-                       .UpdateInventory(PermanentPlayer.instance.startInventory.behaviourDiceList, PermanentPlayer.instance.startInventory.actingPowerDiceList)
-                       .Open();
+        ingamePanelLaboratory.UpdateDiceSummaryList(SessionPlayer.instance.deck)
+                             .UpdateInventory(SessionPlayer.instance.inventory.behaviourDiceList, SessionPlayer.instance.inventory.actingPowerDiceList)
+                             .Open();
     }
 
     public void Init(IngameLogicManager ingameLogicManager)

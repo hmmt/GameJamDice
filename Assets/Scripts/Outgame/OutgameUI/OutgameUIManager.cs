@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class OutgameUIManager : MonoBehaviour
 {
@@ -24,7 +25,7 @@ public class OutgameUIManager : MonoBehaviour
 
     public void OnClickToIngame()
     {
-
+        SceneManager.LoadScene(2);
     }
 
     public void OnClickToPvp()

@@ -31,7 +31,7 @@ public class IngamePanelInventory : PopupBase
                                if (currentDeck.behaviourDice == null)
                                    return;
 
-                               PermanentPlayer.instance.AddBehaviourDice(currentDeck.behaviourDice);
+                               SessionPlayer.instance.inventory.behaviourDiceList.Add(currentDeck.behaviourDice);
                                currentDeck.SetBehaviourDice(null);
                                UpdateDiceSummaryList(SessionPlayer.instance.deck);
                                UpdateInventory(SessionPlayer.instance.inventory.behaviourDiceList, SessionPlayer.instance.inventory.actingPowerDiceList);
@@ -41,7 +41,7 @@ public class IngamePanelInventory : PopupBase
                                if (currentDeck.actingPowerDice == null)
                                    return;
 
-                               PermanentPlayer.instance.AddActingPowerDice(currentDeck.actingPowerDice);
+                               SessionPlayer.instance.inventory.actingPowerDiceList.Add(currentDeck.actingPowerDice);
                                currentDeck.SetActingPowerDice(null);
                                UpdateDiceSummaryList(SessionPlayer.instance.deck);
                                UpdateInventory(SessionPlayer.instance.inventory.behaviourDiceList, SessionPlayer.instance.inventory.actingPowerDiceList);
@@ -53,10 +53,10 @@ public class IngamePanelInventory : PopupBase
                                if (selectedBehaviourData == null)
                                    return;
 
-                               PermanentPlayer.instance.RemoveBehaviourDice(selectedBehaviourData);
+                               SessionPlayer.instance.inventory.behaviourDiceList.Remove(selectedBehaviourData);
                                if (currentBehaviour != null)
                                {
-                                   PermanentPlayer.instance.AddBehaviourDice(currentBehaviour);
+                                   SessionPlayer.instance.inventory.behaviourDiceList.Add(currentBehaviour);
                                }
 
                                currentDeck.SetBehaviourDice(selectedBehaviourData);
@@ -79,10 +79,10 @@ public class IngamePanelInventory : PopupBase
                                if (selectedActingPowerData == null)
                                    return;
 
-                               PermanentPlayer.instance.RemoveActingPowerDice(selectedActingPowerData);
+                               SessionPlayer.instance.inventory.actingPowerDiceList.Remove(selectedActingPowerData);
                                if (currentActingPower != null)
                                {
-                                   PermanentPlayer.instance.AddActingPowerDice(currentActingPower);
+                                   SessionPlayer.instance.inventory.actingPowerDiceList.Add(currentActingPower);
                                }
 
                                currentDeck.SetActingPowerDice(selectedActingPowerData);

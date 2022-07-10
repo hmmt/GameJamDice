@@ -57,4 +57,11 @@ public class UnitStatusData
             hp -= damage;
         Debug.Log(string.Format("hp : {0}, damage : {1}, player : {2}", hp, damage, isPlayer));
     }
+
+    public void RecoverHp(int value)
+    {
+        hp += value;
+        if (hp > maxHp)
+            hp = maxHp;
+    }
 }

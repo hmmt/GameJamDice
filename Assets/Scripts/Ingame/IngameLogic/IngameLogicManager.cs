@@ -17,6 +17,7 @@ public class IngameLogicManager : MonoBehaviour
         public List<DiceConsequenceData> diceResultList = new List<DiceConsequenceData>();
         public int rolledDiceIndex = 0;
         public bool rolledDiceUsed = false;
+        public List<int> usedDices = new List<int>();
     }
 
 
@@ -27,10 +28,10 @@ public class IngameLogicManager : MonoBehaviour
     [SerializeField] UnitViewerManager unitViewerManager;
 
     event Action onStartBattle;
-    event Action onEndBattle;
+    event Action<bool> onEndBattle;
 
     event Action<UnitStatusData> onStartTurn;
-    event Action<UnitStatusData, List<DiceConsequenceData>> onRollCompleteTurn;
+    event Action<UnitStatusData, DiceConsequenceData, int> onRollCompleteTurn;
     event Action<UnitStatusData, int> onReadyToUseDice;
     event Action<UnitStatusData, DiceConsequenceData, List<ActionResultData>> onUseDice;
     event Action<UnitStatusData> onEndTurn;
@@ -61,6 +62,7 @@ public class IngameLogicManager : MonoBehaviour
         StaticDataManager staticDataManager = FindObjectOfType<StaticDataManager>();
 
         turnInfo.diceResultList.Clear();
+        turnInfo.usedDices.Clear();
 
         monsterDataList.Clear();
 
@@ -95,6 +97,7 @@ public class IngameLogicManager : MonoBehaviour
         ingameUIManager.SetPlayer(player)
                        .Init(this);
 
+        InvokeOnStartBattle();
         NextUnitTurn();
     }
 
@@ -153,7 +156,7 @@ public class IngameLogicManager : MonoBehaviour
         if (playerData.isDead)
         {
             // 패배
-            EndBattle();
+            EndBattle(false);
             return true;
         }
 
@@ -170,7 +173,7 @@ public class IngameLogicManager : MonoBehaviour
         if (alldead)
         {
             // 승리
-            EndBattle();
+            EndBattle(true);
             return true;
         }
         return false;
@@ -194,46 +197,77 @@ public class IngameLogicManager : MonoBehaviour
 
     IEnumerator ExecuteUnitTurn()
     {
+        yield return null;
         // 서버에서 처리할 경우 대부분 스킵 가능
 
         // 턴 정보 초기화
         turnInfo = new TurnInfo();
         turnInfo.unit = turnOrderQueue.Dequeue();
 
-
-        if(!turnInfo.unit.isPlayer)
-        {
-            // 플레이어가 아니면 자동 굴리기
-            turnInfo.diceRolled = true;
-        }
-
-        //Debug.Log(1);
-        InvokeOnStartTurn(turnInfo.unit);
-        //Debug.Log(2);
-        while (!turnInfo.diceRolled)
-            yield return null;
-
-        //Debug.Log(3);
-
-
-        // 주사위 굴리기
-        var consequnceList = new List<DiceConsequenceData>();
-        playerData.deck.ForEach(deck =>
-        {
-            consequnceList.Add(new DiceConsequenceData(deck.behaviourDice.GetRandomBehaviourState(),
-                                                       deck.actingPowerDice.GetRandomActingPower()));
-        });
-
         turnInfo.diceResultList.Clear();
-        turnInfo.diceResultList.AddRange(consequnceList);
+        turnInfo.usedDices.Clear();
         turnInfo.rolledDiceIndex = 0;
 
-        InvokeOnCompleteRollDice(turnInfo.unit, consequnceList);
+        if(turnInfo.unit.posionCount > 0)
+        {
+            turnInfo.unit.posionCount--;
+            unitViewerManager.ShowOnlyDamageEffect(turnInfo.unit, turnInfo.unit.maxHp / 10);
+            turnInfo.unit.TakeDamage(turnInfo.unit.maxHp / 10);
+        }
+
+        if(turnInfo.unit.isDead)
+        {
+            yield return null;
+            if (CheckEndBattle())
+            {
+                yield break;
+            }
+            //Debug.Log(10);
+            NextUnitTurn();
+            yield break;
+        }
+
+
+        // 실드 초기화
+        turnInfo.unit.shield = 0;
+        InvokeOnStartTurn(turnInfo.unit);
+
+        for (int i=0; i< turnInfo.unit.deck.Count; i++)
+        {
+            Debug.Log("AA + " + WaitEffectEnd());
+            // 왠지 몰라도 waiting 상태일 때가 있음
+            while (WaitEffectEnd())
+                yield return null;
+            if (!turnInfo.unit.isPlayer)
+            {
+                // 플레이어가 아니면 자동 굴리기
+                turnInfo.diceRolled = true;
+            }
+            else
+            {
+                turnInfo.diceRolled = false;
+            }
+
+            //Debug.Log(1);
+            //Debug.Log(2);
+            while (!turnInfo.diceRolled)
+                yield return null;
+
+            var dcdata = new DiceConsequenceData(turnInfo.unit.deck[i].behaviourDice.GetRandomBehaviourState(),
+                                                       turnInfo.unit.deck[i].actingPowerDice.GetRandomActingPower());
+
+            turnInfo.diceResultList.Add(dcdata);
+
+            InvokeOnCompleteRollDice(turnInfo.unit, dcdata, i);
+
+            Debug.Log("BB + " +WaitEffectEnd());
+            // 주사위 굴리는 연출 대기
+            while (WaitEffectEnd())
+                yield return null;
+        }
 
         //Debug.Log(4);
-        // 주사위 굴리는 연출 대기
-        while (WaitEffectEnd())
-            yield return null;
+        
         //Debug.Log(5);
         while (turnInfo.rolledDiceIndex < turnInfo.diceResultList.Count)
         {
@@ -265,6 +299,7 @@ public class IngameLogicManager : MonoBehaviour
             //Debug.Log(7 + "-" + turnInfo.rolledDiceIndex);
 
             InvokeOnUseDice(turnInfo.unit, result, actionResultList);
+
             while (WaitEffectEnd())
                 yield return null;
 
@@ -300,6 +335,7 @@ public class IngameLogicManager : MonoBehaviour
         if (turnInfo.rolledDiceIndex == slotIndex
             && slotIndex < turnInfo.diceResultList.Count)
         {
+            turnInfo.rolledDiceUsed = true;
             var actor = turnInfo.unit;
             var diceResult = turnInfo.diceResultList[slotIndex];
             if (unit == null)
@@ -308,11 +344,6 @@ public class IngameLogicManager : MonoBehaviour
                 {
                     case BehaviourState.offense:
                         unit = actor.isPlayer ? monsterDataList.Where(x => !x.isDead).FirstOrDefault() : playerData;
-                        if (unit == null)
-                        {
-                            //Debug.LogError("???");
-                            return new List<ActionResultData>();
-                        }
                         break;
                     case BehaviourState.defense:
                         // 보호막
@@ -322,11 +353,6 @@ public class IngameLogicManager : MonoBehaviour
                         break;
                     case BehaviourState.poison:
                         unit = actor.isPlayer ? monsterDataList.Where(x => !x.isDead).FirstOrDefault() : playerData;
-                        if (unit == null)
-                        {
-                            //Debug.LogError("???");
-                            return new List<ActionResultData>();
-                        }
                         break;
                     case BehaviourState.recovery:
                         break;
@@ -342,39 +368,58 @@ public class IngameLogicManager : MonoBehaviour
             switch (diceResult.behaviourState)
             {
                 case BehaviourState.offense:
-                    // 횟수로 바꿔야 함
-                    //unit.hp -= diceResult.actingPower;
+                    if (unit == null)
+                        break;
                     unit.TakeDamage(diceResult.actingPower);
                     resultList.Add(new ActionResultData(unit, diceResult.actingPower));
                     break;
                 case BehaviourState.defense:
                     // 보호막
+                    actor.shield += diceResult.actingPower;
                     break;
                 case BehaviourState.lightning:
                     // 연쇄
+                    if(actor.isPlayer)
+                    {
+                        foreach(var monster in monsterDataList)
+                        {
+                            monster.TakeDamage(diceResult.actingPower);
+                            resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                        }
+                    }
+                    else
+                    {
+                        if (unit == null)
+                            break;
+                        unit.TakeDamage(diceResult.actingPower);
+                        resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                    }
                     break;
                 case BehaviourState.poison:
-                    // 횟수로 바꿔야 함
+                    if (unit == null)
+                        break;
                     unit.TakeDamage(diceResult.actingPower);
+                    unit.posionCount++;
                     resultList.Add(new ActionResultData(unit, diceResult.actingPower));
                     break;
                 case BehaviourState.recovery:
+                    actor.RecoverHp(diceResult.actingPower);
                     break;
             }
-            turnInfo.rolledDiceUsed = true;
+            
             return resultList;
         }
         return new List<ActionResultData>();
     }
 
 
-    public void EndBattle()
+    public void EndBattle(bool win)
     {
         if (!inBattle)
             return;
         inBattle = false;
         unitViewerManager.ClearMonsters();
-        onEndBattle?.Invoke();
+        onEndBattle?.Invoke(win);
     }
     #endregion
     #region event
@@ -398,14 +443,14 @@ public class IngameLogicManager : MonoBehaviour
     /// <summary>
     /// 전투가 끝나고 보상 받을 때
     /// </summary>
-    public IngameLogicManager AddActionOnEndBattle(Action callback)
+    public IngameLogicManager AddActionOnEndBattle(Action<bool> callback)
     {
         onEndBattle -= callback;
         onEndBattle += callback;
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnEndbattle(Action callback)
+    public IngameLogicManager RemoveActionOnEndbattle(Action<bool> callback)
     {
         onEndBattle -= callback;
         return this;
@@ -424,14 +469,14 @@ public class IngameLogicManager : MonoBehaviour
         return this;
     }
 
-    public IngameLogicManager AddActionOnRollCompleteTurn(Action<UnitStatusData, List<DiceConsequenceData>> callback)
+    public IngameLogicManager AddActionOnRollCompleteTurn(Action<UnitStatusData, DiceConsequenceData, int> callback)
     {
         onRollCompleteTurn -= callback;
         onRollCompleteTurn += callback;
         return this;
     }
 
-    public IngameLogicManager RemoveActionOnRollCompleteTurn(Action<UnitStatusData, List<DiceConsequenceData>> callback)
+    public IngameLogicManager RemoveActionOnRollCompleteTurn(Action<UnitStatusData, DiceConsequenceData, int> callback)
     {
         onRollCompleteTurn -= callback;
         return this;
@@ -480,9 +525,9 @@ public class IngameLogicManager : MonoBehaviour
         onStartTurn?.Invoke(unit);
     }
 
-    public void InvokeOnCompleteRollDice(UnitStatusData unit, List<DiceConsequenceData> sessionDecks)
+    public void InvokeOnCompleteRollDice(UnitStatusData unit, DiceConsequenceData sessionDecks, int diceIndex)
     {
-        onRollCompleteTurn?.Invoke(unit, sessionDecks);
+        onRollCompleteTurn?.Invoke(unit, sessionDecks, diceIndex);
     }
 
     public void InvokeOnUseDice(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> actionResultList)

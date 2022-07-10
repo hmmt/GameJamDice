@@ -103,6 +103,22 @@ public class UnitViewerManager : MonoBehaviour
             damageEffectPool.PlayDamageEffect(damage, viewer.transform.position);
         }
     }
+    public void ShowEffect(UnitStatusData unit, string effect)
+    {
+        try
+        {
+            var viewer = FindUnit(unit);
+            if (viewer != null)
+            {
+                Instantiate(Resources.Load<GameObject>("Effect/" + effect)).transform.position = viewer.transform.position;
+            }
+        }
+        catch(System.Exception e)
+        {
+
+        }
+        
+    }
 
     #region callback
 
@@ -164,6 +180,13 @@ public class UnitViewerManager : MonoBehaviour
                     {
                         damageEffectPool.PlayDamageEffect(result.value, viewer.transform.position);
                     }
+
+                    ShowEffect(result.unit, "SlashEffect");
+
+                    if(diceData.behaviourState == BehaviourState.poison)
+                    {
+                        ShowEffect(result.unit, "PoisonEffect");
+                    }
                 }
             }
             else if(diceData.behaviourState == BehaviourState.recovery)
@@ -175,6 +198,8 @@ public class UnitViewerManager : MonoBehaviour
                     {
                         damageEffectPool.PlayHealEffect(result.value, viewer.transform.position);
                     }
+
+                    ShowEffect(result.unit, "HealEffect");
                 }
             }
         }

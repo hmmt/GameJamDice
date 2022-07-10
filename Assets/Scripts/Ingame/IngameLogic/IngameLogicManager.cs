@@ -214,6 +214,8 @@ public class IngameLogicManager : MonoBehaviour
         {
             turnInfo.unit.posionCount--;
             unitViewerManager.ShowOnlyDamageEffect(turnInfo.unit, turnInfo.unit.maxHp / 10);
+            unitViewerManager.ShowEffect(turnInfo.unit, "PoisonEffect");
+
             turnInfo.unit.TakeDamage(turnInfo.unit.maxHp / 10);
         }
 
@@ -449,6 +451,7 @@ public class IngameLogicManager : MonoBehaviour
                 case BehaviourState.defense:
                     // º¸È£¸·
                     actor.shield += diceResult.actingPower;
+                    unitViewerManager.ShowEffect(actor, "ShieldEffect");
                     break;
                 case BehaviourState.lightning:
                     // ¿¬¼â

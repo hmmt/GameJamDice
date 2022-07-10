@@ -207,7 +207,10 @@ public class IngameLogicManager : MonoBehaviour
         turnInfo.selectedDiceIndex = -1;
         turnInfo.rolledDiceIndex = 0;
 
-        if(turnInfo.unit.posionCount > 0)
+        // roll 버튼 비활성화를 위해 기본값을 true로 함
+        turnInfo.diceRolled = true;
+
+        if (turnInfo.unit.posionCount > 0)
         {
             turnInfo.unit.posionCount--;
             unitViewerManager.ShowOnlyDamageEffect(turnInfo.unit, turnInfo.unit.maxHp / 10);
@@ -322,6 +325,11 @@ public class IngameLogicManager : MonoBehaviour
     public void RollMyDice()
     {
         turnInfo.diceRolled = true;
+    }
+
+    public bool CanRoll()
+    {
+        return !turnInfo.diceRolled;
     }
 
     /// <summary>

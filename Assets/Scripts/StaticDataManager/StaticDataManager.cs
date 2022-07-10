@@ -6,7 +6,14 @@ using UnityEngine;
 
 public class StaticDataManager : MonoBehaviour
 {
+    public static StaticDataManager instance { get; private set; }
+
     [SerializeField] List<StaticS3DataBase> staticDataList;
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
     private void Start()
     {

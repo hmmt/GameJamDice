@@ -252,7 +252,13 @@ public class IngameLogicManager : MonoBehaviour
             //Debug.Log(1);
             //Debug.Log(2);
             while (!turnInfo.diceRolled)
+            {
+                if (!WaitEffectEnd() && CheckEndBattle())
+                {
+                    yield break;
+                }
                 yield return null;
+            }
 
             var dcdata = new DiceConsequenceData(turnInfo.unit.deck[i].behaviourDice.GetRandomBehaviourState(),
                                                        turnInfo.unit.deck[i].actingPowerDice.GetRandomActingPower());
@@ -456,10 +462,11 @@ public class IngameLogicManager : MonoBehaviour
                     }
                     else
                     {
-                        if (unit == null)
-                            break;
-                        unit.TakeDamage(diceResult.actingPower);
-                        resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                        if(playerData != null)
+                        {
+                            playerData.TakeDamage(diceResult.actingPower);
+                            resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                        }
                     }
                     break;
                 case BehaviourState.poison:

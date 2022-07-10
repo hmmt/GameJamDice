@@ -89,10 +89,12 @@ public class UnitViewer : MonoBehaviour
         if (data.isDead)
         {
             rendererRoot.gameObject.SetActive(false);
+            hpBar.gameObject.SetActive(false);
         }
         else
         {
             rendererRoot.gameObject.SetActive(true);
+            hpBar.gameObject.SetActive(true);
         }
 
         
@@ -156,6 +158,8 @@ public class UnitViewer : MonoBehaviour
 
     public void ShowSelectionMark()
     {
+        if (data == null || data.isDead)
+            return;
         selectMark.SetActive(true);
     }
 

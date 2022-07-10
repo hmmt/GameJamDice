@@ -37,7 +37,7 @@ MonoBehaviour:
     actingPowerDice_4: -1
     actingPowerDice_5: -1
   - index: 1
-    monsterName: "\uFFFD\uFFFD\uFFFD\uFFFD"
+    monsterName: "\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD"
     hitpoint: 50
     behaviourDice_1: 869
     behaviourDice_2: 1152
@@ -49,3 +49,42 @@ MonoBehaviour:
     actingPowerDice_3: -1
     actingPowerDice_4: -1
     actingPowerDice_5: -1
+  - index: 2
+    monsterName: "\uFFFD\U00035975\uFFFD \uFFFD\uFFFD\uFFFD\uFFFD \uFFFD\uFFFD\uFFFD\uFFFD"
+    hitpoint: 70
+    behaviourDice_1: 601
+    behaviourDice_2: 601
+    behaviourDice_3: 460
+    behaviourDice_4: -1
+    behaviourDice_5: -1
+    actingPowerDice_1: 1304
+    actingPowerDice_2: 1406
+    actingPowerDice_3: 6
+    actingPowerDice_4: -1
+    actingPowerDice_5: -1
+  - index: 3
+    monsterName: "\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD \uFFFD\u03FC\uFFFD\uFFFD\uFFFD"
+    hitpoint: 100
+    behaviourDice_1: 149
+    behaviourDice_2: 159
+    behaviourDice_3: 108
+    behaviourDice_4: 108
+    behaviourDice_5: -1
+    actingPowerDice_1: 1426
+    actingPowerDice_2: 2802
+    actingPowerDice_3: 2576
+    actingPowerDice_4: 3066
+    actingPowerDice_5: -1
+  - index: 4
+    monsterName: "\uFFFD\uFFFD\uFFFD\uFFFD"
+    hitpoint: 200
+    behaviourDice_1: 149
+    behaviourDice_2: 7
+    behaviourDice_3: 28
+    behaviourDice_4: 314
+    behaviourDice_5: 476
+    actingPowerDice_1: 1426
+    actingPowerDice_2: 130
+    actingPowerDice_3: 130
+    actingPowerDice_4: 392
+    actingPowerDice_5: 826

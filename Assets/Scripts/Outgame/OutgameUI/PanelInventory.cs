@@ -8,6 +8,9 @@ public class PanelInventory : PopupBase
     [SerializeField] List<UIItemDiceSummary> diceSummaryList;
     [SerializeField] LeanGameObjectPool diceViewerPool;
     [SerializeField] Transform tfParent;
+    S3BehaviourDiceData selectedBehaviourData;
+    S3ActingPowerDiceData selectedActingPowerData;
+
 
     public PanelInventory UpdateDiceSummaryList(List<SessionDeck> deckList)
     {
@@ -19,24 +22,84 @@ public class PanelInventory : PopupBase
             if (enableDeck)
             {
                 var deck = deckList[i];
-                diceSummary.SetDeck(deck)
+                diceSummary.SetIndex(i)
+                           .SetDeck(deck)
                            .SetBehaviours(deck.behaviourDice?.BehavioursToList() ?? new List<BehaviourState>())
                            .SetActingPowers(deck.actingPowerDice?.ActingPowerToList() ?? new List<int>())
                            .SetActionOnClickReleaseBehaviour((currentDeck) =>
                            {
+                               if (currentDeck.behaviourDice == null)
+                                   return;
+
                                PermanentPlayer.instance.AddBehaviourDice(currentDeck.behaviourDice);
                                currentDeck.SetBehaviourDice(null);
-                               UpdateDiceSummaryList(deckList);
+                               UpdateDiceSummaryList(PermanentPlayer.instance.startInventory.currentDeckList);
                                UpdateInventory(PermanentPlayer.instance.startInventory.behaviourDiceList, PermanentPlayer.instance.startInventory.actingPowerDiceList);
                            })
                            .SetActionOnClickReleaseActingPower((currentDeck) =>
                            {
+                               if (currentDeck.behaviourDice == null)
+                                   return;
+
                                PermanentPlayer.instance.AddActingPowerDice(currentDeck.actingPowerDice);
                                currentDeck.SetActingPowerDice(null);
-                               UpdateDiceSummaryList(deckList);
+                               UpdateDiceSummaryList(PermanentPlayer.instance.startInventory.currentDeckList);
                                UpdateInventory(PermanentPlayer.instance.startInventory.behaviourDiceList, PermanentPlayer.instance.startInventory.actingPowerDiceList);
-                           });
+                           })
+                           .SetActionOnClickAddBehaviour((index, currentDeck) =>
+                           {
+                               var currentBehaviour = currentDeck.behaviourDice;
+                               
+                               if (selectedBehaviourData == null)
+                                   return;
 
+                               PermanentPlayer.instance.RemoveBehaviourDice(selectedBehaviourData);
+                               if (currentBehaviour != null)
+                               {
+                                   PermanentPlayer.instance.AddBehaviourDice(currentBehaviour);
+                               }
+
+                               currentDeck.SetBehaviourDice(selectedBehaviourData);
+                               var targetDeck = diceSummaryList.Find(data => data.index == index);
+                               targetDeck.SetBehaviours(selectedBehaviourData.BehavioursToList());
+
+                               //UpdateDiceSummaryList(PermanentPlayer.instance.startInventory.currentDeckList);
+                               UpdateInventory(PermanentPlayer.instance.startInventory.behaviourDiceList, PermanentPlayer.instance.startInventory.actingPowerDiceList);
+                               diceSummaryList.ForEach(diceSummary =>
+                               {
+                                   diceSummary.SetActiveReleaseActingPowerBtn(true)
+                                              .SetActiveReleaseBehaviourBtn(true)
+                                              .SetActiveAddBehaviourBtn(false)
+                                              .SetActiveAddActingPowerBtn(false);
+                               });
+                           })
+                           .SetActionOnClickAddActingPower((index, currentDeck) =>
+                           {
+                               var currentActingPower = currentDeck.actingPowerDice;
+
+                               if (selectedActingPowerData == null)
+                                   return;
+
+                               PermanentPlayer.instance.RemoveActingPowerDice(selectedActingPowerData);
+                               if (currentActingPower != null)
+                               {
+                                   PermanentPlayer.instance.AddActingPowerDice(currentActingPower);
+                               }
+
+                               currentDeck.SetActingPowerDice(selectedActingPowerData);
+                               var targetDeck = diceSummaryList.Find(data => data.index == index);
+                               targetDeck.SetActingPowers(selectedActingPowerData.ActingPowerToList());
+
+                               //UpdateDiceSummaryList(PermanentPlayer.instance.startInventory.currentDeckList);
+                               UpdateInventory(PermanentPlayer.instance.startInventory.behaviourDiceList, PermanentPlayer.instance.startInventory.actingPowerDiceList);
+                               diceSummaryList.ForEach(diceSummary =>
+                               {
+                                   diceSummary.SetActiveReleaseActingPowerBtn(true)
+                                              .SetActiveReleaseBehaviourBtn(true)
+                                              .SetActiveAddBehaviourBtn(false)
+                                              .SetActiveAddActingPowerBtn(false);
+                               });
+                           });
             }
             else
             {
@@ -56,17 +119,31 @@ public class PanelInventory : PopupBase
             GameObject prefab = null;
             diceViewerPool.TrySpawn(ref prefab, tfParent);
             var diceViewer = prefab.GetComponent<UIItemDiceViewer>();
-            diceViewer.SetIconViewer((iconViewerList) =>
-            {
-                var behaviourList = data.BehavioursToList();
-                for (int i = 0; i < 6; i++)
-                {
-                    var iconViewer = iconViewerList[i];
-                    var behaviour = behaviourList[i];
-                    var sprite = SpriteManager.instance.GetBevaiourIconSprite((int)behaviour);
-                    iconViewer.SetSpriteIcon(sprite);
-                }
-            });
+            diceViewer.SetType(1)
+                      .SetIndex(data.index)
+                      .SetIconViewer((iconViewerList) =>
+                      {
+                          var behaviourList = data.BehavioursToList();
+                          for (int i = 0; i < 6; i++)
+                          {
+                              var iconViewer = iconViewerList[i];
+                              var behaviour = behaviourList[i];
+                              var sprite = SpriteManager.instance.GetBevaiourIconSprite((int)behaviour);
+                              iconViewer.SetSpriteIcon(sprite);
+                          }
+                      })
+                      .SetActionOnClick((type, index) =>
+                      {
+                          selectedActingPowerData = null;
+                          selectedBehaviourData = data;
+                          diceSummaryList.ForEach(diceSummary =>
+                          {
+                              diceSummary.SetActiveReleaseBehaviourBtn(false)
+                                         .SetActiveReleaseActingPowerBtn(false)
+                                         .SetActiveAddBehaviourBtn(true)
+                                         .SetActiveAddActingPowerBtn(false);
+                          });
+                      });
             objectList.Add(prefab);
         });
 
@@ -75,17 +152,31 @@ public class PanelInventory : PopupBase
             GameObject prefab = null;
             diceViewerPool.TrySpawn(ref prefab, tfParent);
             var diceViewer = prefab.GetComponent<UIItemDiceViewer>();
-            diceViewer.SetIconViewer((iconViewerList) =>
-            {
-                var actingPowerList = data.ActingPowerToList();
-                for (int i = 0; i < 6; i++)
-                {
-                    var iconViewer = iconViewerList[i];
-                    var actingPower = actingPowerList[i];
-                    var sprite = SpriteManager.instance.GetActingPowerIconSprite(actingPower);
-                    iconViewer.SetSpriteIcon(sprite);
-                }
-            });
+            diceViewer.SetType(0)
+                      .SetIndex(data.index)
+                      .SetIconViewer((iconViewerList) =>
+                      {
+                          var actingPowerList = data.ActingPowerToList();
+                          for (int i = 0; i < 6; i++)
+                          {
+                              var iconViewer = iconViewerList[i];
+                              var actingPower = actingPowerList[i];
+                              var sprite = SpriteManager.instance.GetActingPowerIconSprite(actingPower);
+                              iconViewer.SetSpriteIcon(sprite);
+                          }
+                      })
+                      .SetActionOnClick((type, index) =>
+                      {
+                          selectedBehaviourData = null;
+                          selectedActingPowerData = data;//StaticDataManager.instance.GetActionPowerDice(data => data.index == index).ToMemberWiseClone();
+                          diceSummaryList.ForEach(diceSummary =>
+                          {
+                              diceSummary.SetActiveReleaseBehaviourBtn(false)
+                                         .SetActiveReleaseActingPowerBtn(false)
+                                         .SetActiveAddBehaviourBtn(false)
+                                         .SetActiveAddActingPowerBtn(true);
+                          });
+                      });
             objectList.Add(prefab);
         });
         objectList.Shuffle();

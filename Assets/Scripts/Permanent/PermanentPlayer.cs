@@ -96,6 +96,16 @@ public class PermanentPlayer
         startInventory.actingPowerDiceList.Add(actingPowerDiceData);
     }
 
+    public void RemoveBehaviourDice(S3BehaviourDiceData behaviourDiceData)
+    {
+        startInventory.behaviourDiceList.Remove(behaviourDiceData);
+    }
+
+    public void RemoveActingPowerDice(S3ActingPowerDiceData actingPowerDice)
+    {
+        startInventory.actingPowerDiceList.Remove(actingPowerDice);
+    }
+
     public void IncreaseCurrency(int currency)
     {
         this.currency += currency;

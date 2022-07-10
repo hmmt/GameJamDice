@@ -7,9 +7,42 @@ public class UIItemDiceSummary : MonoBehaviour
 {
     [SerializeField] List<IconViewer> behaviourIconList;
     [SerializeField] List<IconViewer> actingPowerIconList;
+    [SerializeField] GameObject goBtnReleaseBehaviour, goBtnReleaseActingPower, goBtnAddBehaviour, goBtnAddActingPower;
 
     Action<SessionDeck> onClickReleaseBehaviour, onClickReleaseActingPower;
-    SessionDeck deck;
+    Action<int, SessionDeck> onClickAddBehaviourDice, onClickAddActingPowerDice;
+    public SessionDeck deck { get; private set; }
+    public int index { get; private set; }
+
+    public UIItemDiceSummary SetIndex(int index)
+    {
+        this.index = index;
+        return this;
+    }
+
+    public UIItemDiceSummary SetActiveReleaseBehaviourBtn(bool enable)
+    {
+        goBtnReleaseBehaviour.SetActive(enable);
+        return this;
+    }
+
+    public UIItemDiceSummary SetActiveReleaseActingPowerBtn(bool enable)
+    {
+        goBtnReleaseActingPower.SetActive(enable);
+        return this;
+    }
+
+    public UIItemDiceSummary SetActiveAddBehaviourBtn(bool enable)
+    {
+        goBtnAddBehaviour.SetActive(enable);
+        return this;
+    }
+
+    public UIItemDiceSummary SetActiveAddActingPowerBtn(bool enable)
+    {
+        goBtnAddActingPower.SetActive(enable);
+        return this;
+    }
 
     public UIItemDiceSummary SetActionOnClickReleaseBehaviour(Action<SessionDeck> callback)
     {
@@ -20,6 +53,18 @@ public class UIItemDiceSummary : MonoBehaviour
     public UIItemDiceSummary SetActionOnClickReleaseActingPower(Action<SessionDeck> callback)
     {
         onClickReleaseActingPower = callback;
+        return this;
+    }
+
+    public UIItemDiceSummary SetActionOnClickAddBehaviour(Action<int, SessionDeck> callback)
+    {
+        onClickAddBehaviourDice = callback;
+        return this;
+    }
+
+    public UIItemDiceSummary SetActionOnClickAddActingPower(Action<int, SessionDeck> callback)
+    {
+        onClickAddActingPowerDice = callback;
         return this;
     }
 
@@ -40,6 +85,7 @@ public class UIItemDiceSummary : MonoBehaviour
             {
                 var behaviourState = behaviourList[i];
                 var sprite = SpriteManager.instance.GetBevaiourIconSprite((int)behaviourState);
+                behaviourIcon.SetActive(true);
                 behaviourIcon.SetSpriteIcon(sprite);
             }
             else
@@ -62,6 +108,7 @@ public class UIItemDiceSummary : MonoBehaviour
             {
                 var actingPower = actingPowerList[i];
                 var sprite = SpriteManager.instance.GetActingPowerIconSprite(actingPower);
+                actingPowerIcon.SetActive(true);
                 actingPowerIcon.SetSpriteIcon(sprite);
             }
             else
@@ -86,5 +133,15 @@ public class UIItemDiceSummary : MonoBehaviour
     public void OnClickReleaseActingPower()
     {
         onClickReleaseActingPower?.Invoke(deck);
+    }
+
+    public void OnClickAddBehaviour()
+    {
+        onClickAddBehaviourDice?.Invoke(index, deck);
+    }
+
+    public void OnClickAddActingPower()
+    {
+        onClickAddActingPowerDice?.Invoke(index, deck);
     }
 }

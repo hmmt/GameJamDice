@@ -10,7 +10,10 @@ public class OutgameUIManager : MonoBehaviour
     public void OnClickOpenPanelInventory()
     {
         var deckList = PermanentPlayer.instance.startInventory.currentDeckList;
+        var behaviourDiceList = PermanentPlayer.instance.startInventory.behaviourDiceList;
+        var actingPowerDiceList = PermanentPlayer.instance.startInventory.actingPowerDiceList;
         panelInventory.UpdateDiceSummaryList(deckList)
+                      .UpdateInventory(behaviourDiceList, actingPowerDiceList)
                       .Open();
     }
 

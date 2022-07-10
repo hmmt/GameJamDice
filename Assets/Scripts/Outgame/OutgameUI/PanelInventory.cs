@@ -1,3 +1,4 @@
+using Lean.Pool;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,7 +6,8 @@ using UnityEngine;
 public class PanelInventory : PopupBase
 {
     [SerializeField] List<UIItemDiceSummary> diceSummaryList;
-    //[SerializeField] List
+    [SerializeField] LeanGameObjectPool diceViewerPool;
+    [SerializeField] Transform tfParent;
 
     public PanelInventory UpdateDiceSummaryList(List<SessionDeck> deckList)
     {
@@ -28,6 +30,56 @@ public class PanelInventory : PopupBase
         return this;
     }
 
+    public PanelInventory UpdateInventory(List<S3BehaviourDiceData> behaviourDiceDataList, List<S3ActingPowerDiceData> actingPowerDiceDataList)
+    {
+        diceViewerPool.DespawnAll();
+        var objectList = new List<GameObject>();
+
+        behaviourDiceDataList.ForEach(data =>
+        {
+            GameObject prefab = null;
+            diceViewerPool.TrySpawn(ref prefab, tfParent);
+            var diceViewer = prefab.GetComponent<UIItemDiceViewer>();
+            diceViewer.SetIconViewer((iconViewerList) =>
+            {
+                var behaviourList = data.BehavioursToList();
+                for (int i = 0; i < 6; i++)
+                {
+                    var iconViewer = iconViewerList[i];
+                    var behaviour = behaviourList[i];
+                    var sprite = SpriteManager.instance.GetBevaiourIconSprite((int)behaviour);
+                    iconViewer.SetSpriteIcon(sprite);
+                }
+            });
+            objectList.Add(prefab);
+        });
+
+        actingPowerDiceDataList.ForEach(data =>
+        {
+            GameObject prefab = null;
+            diceViewerPool.TrySpawn(ref prefab, tfParent);
+            var diceViewer = prefab.GetComponent<UIItemDiceViewer>();
+            diceViewer.SetIconViewer((iconViewerList) =>
+            {
+                var actingPowerList = data.ActingPowerToList();
+                for (int i = 0; i < 6; i++)
+                {
+                    var iconViewer = iconViewerList[i];
+                    var actingPower = actingPowerList[i];
+                    var sprite = SpriteManager.instance.GetActingPowerIconSprite(actingPower);
+                    iconViewer.SetSpriteIcon(sprite);
+                }
+            });
+            objectList.Add(prefab);
+        });
+        objectList.Shuffle();
+        for (int i = 0; i < objectList.Count; i++)
+        {
+            objectList[i].transform.SetSiblingIndex(i);
+        }
+        return this;
+    }
+
     public override void Open()
     {
         gameObject.SetActive(true);
@@ -39,4 +91,8 @@ public class PanelInventory : PopupBase
         gameObject.SetActive(false);
     }
 
+    public void OnClickClose()
+    {
+        Close();
+    }
 }

@@ -149,4 +149,9 @@ public class PanelShop : PopupBase
     {
         gameObject.SetActive(false);
     }
+
+    public void OnClickClose()
+    {
+        Close();
+    }
 }

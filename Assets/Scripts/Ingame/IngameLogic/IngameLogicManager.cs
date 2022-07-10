@@ -281,21 +281,45 @@ public class IngameLogicManager : MonoBehaviour
         {
             while (turnInfo.usedDices.Count < turnInfo.diceResultList.Count)
             {
-                if (!WaitEffectEnd() && CheckEndBattle())
+                if (monsterDataList.FindAll(x => !x.isDead).Count <= 1)
                 {
-                    yield break;
+                    for(int i=0; i< turnInfo.diceResultList.Count; i++)
+                    {
+                        while (WaitEffectEnd())
+                            yield return null;
+
+                        if (!IsUsableDiceSlot(i))
+                            continue;
+
+                        UseDice(i, null);
+
+                        yield return new WaitForSeconds(0.75f);
+
+
+                        while (WaitEffectEnd())
+                            yield return null;
+
+
+                        if (CheckEndBattle())
+                        {
+                            yield break;
+                        }
+                    }
                 }
-                yield return null;
+                else
+                {
+                    if (!WaitEffectEnd() && CheckEndBattle())
+                    {
+                        yield break;
+                    }
+                    yield return null;
+                }
             }
         }
         else
         {
             while (turnInfo.rolledDiceIndex < turnInfo.diceResultList.Count)
             {
-                var result = turnInfo.diceResultList[turnInfo.rolledDiceIndex];
-
-                //InvokeOnReadyToUseDice(turnInfo.unit, turnInfo.rolledDiceIndex);
-
                 List<ActionResultData> actionResultList;
                 
                 UseDice(turnInfo.rolledDiceIndex, null);

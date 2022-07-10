@@ -19,8 +19,24 @@ public class PanelInventory : PopupBase
             if (enableDeck)
             {
                 var deck = deckList[i];
-                diceSummary.SetBehaviours(deck.behaviourDice.BehavioursToList())
-                           .SetActingPowers(deck.actingPowerDice.ActingPowerToList());
+                diceSummary.SetDeck(deck)
+                           .SetBehaviours(deck.behaviourDice?.BehavioursToList() ?? new List<BehaviourState>())
+                           .SetActingPowers(deck.actingPowerDice?.ActingPowerToList() ?? new List<int>())
+                           .SetActionOnClickReleaseBehaviour((currentDeck) =>
+                           {
+                               PermanentPlayer.instance.AddBehaviourDice(currentDeck.behaviourDice);
+                               currentDeck.SetBehaviourDice(null);
+                               UpdateDiceSummaryList(deckList);
+                               UpdateInventory(PermanentPlayer.instance.startInventory.behaviourDiceList, PermanentPlayer.instance.startInventory.actingPowerDiceList);
+                           })
+                           .SetActionOnClickReleaseActingPower((currentDeck) =>
+                           {
+                               PermanentPlayer.instance.AddActingPowerDice(currentDeck.actingPowerDice);
+                               currentDeck.SetActingPowerDice(null);
+                               UpdateDiceSummaryList(deckList);
+                               UpdateInventory(PermanentPlayer.instance.startInventory.behaviourDiceList, PermanentPlayer.instance.startInventory.actingPowerDiceList);
+                           });
+
             }
             else
             {

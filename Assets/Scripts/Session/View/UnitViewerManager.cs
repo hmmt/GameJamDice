@@ -30,6 +30,11 @@ public class UnitViewerManager : MonoBehaviour
         playerUnit.gameObject.SetActive(true);
         playerUnit.LoadPlayerSprites();
         playerUnit.SetIngameUnitData(data);
+        playerUnit.transform.localPosition = playerPosition.position;
+
+
+        // 플레이어 클릭은 일단 제외
+        //playerUnit.Init(OnClickUnit);
     }
 
     public void InitializeMonsterUnits(List<UnitStatusData> monsters)
@@ -49,6 +54,8 @@ public class UnitViewerManager : MonoBehaviour
             newMonster.LoadMonsterSprites(monster.monsterIndex);
             newMonster.transform.localPosition = position;
             monsterUnits.Add(newMonster);
+
+            newMonster.Init(OnClickUnit);
         }
     }
 
@@ -56,6 +63,7 @@ public class UnitViewerManager : MonoBehaviour
     {
         //logic.InvokeOnUseDice()
         logic.AddActionOnUseDice(OnUseDice);
+        logic.AddActionOnSelectDiceSlot(OnSelectDice);
     }
 
     public void ClearMonsters()
@@ -97,8 +105,40 @@ public class UnitViewerManager : MonoBehaviour
     }
 
     #region callback
-    private void OnUseDice(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
+
+    private void OnClickUnit(UnitViewer unit)
     {
+        IngameLogicManager.instance.SelectUnit(unit.data);
+    }
+
+    private void OnSelectDice(int diceIndex)
+    {
+        if(IngameLogicManager.instance.IsUsableDiceSlot(diceIndex))
+        {
+            var diceData = IngameLogicManager.instance.GetDiceResultData(diceIndex);
+
+            if (diceData.behaviourState == BehaviourState.offense || diceData.behaviourState == BehaviourState.poison)
+            {
+                foreach (var monster in monsterUnits)
+                {
+                    monster.ShowSelectionMark();
+                }
+            }
+        }
+        else
+        {
+            foreach (var monster in monsterUnits)
+            {
+                monster.HideSelectionMark();
+            }
+        }
+    }
+    private void OnUseDice(UnitStatusData unit, DiceConsequenceData diceData, int diceIndex, List<ActionResultData> resultList)
+    {
+        foreach (var monster in monsterUnits)
+        {
+            monster.HideSelectionMark();
+        }
         StartCoroutine(PlayDamageEffect(unit, diceData, resultList));
     }
 
@@ -131,7 +171,7 @@ public class UnitViewerManager : MonoBehaviour
 
         }
 
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.5f);
         waiting = false;
 
     }

@@ -31,6 +31,10 @@ public class IngameUIManager : MonoBehaviour
 
     private Turn _lastTurn = Turn.None;
 
+    #region selection
+    private int _selectedIndex = -1;
+    #endregion
+
     public bool waiting { private set; get; }
 
     private void Awake()
@@ -43,6 +47,7 @@ public class IngameUIManager : MonoBehaviour
     public void Init(IngameLogicManager ingameLogicManager)
     {
         waiting = false;
+        _selectedIndex = -1;
         if (rollButton != null)
             rollButton.gameObject.SetActive(false);
 
@@ -57,7 +62,11 @@ public class IngameUIManager : MonoBehaviour
 
         ingameLogicManager.AddActionOnStartTurn(OnStartTurn);    // 턴이 시작될 때 턴 시작 타이틀을 띄우는 등의 작업
         ingameLogicManager.AddActionOnRollCompleteTurn(OnRollCompleteTurn); // 주사위 굴리는 연출 작업
+        ingameLogicManager.AddActionOnUseDice(OnUseDice);
         ingameLogicManager.AddActionOnEndTurn(OnEndTurn); // 어떤 주사위 결과가 나왔는지 팝업 띄우기 등의 작업
+
+        ingameLogicManager.AddActionOnSelectDiceSlot(OnSelectDice);
+
         //ingameLogicManager.AddActionOnEndMyTurn();      // 내 턴에서 어떤 주사위 결과가 나왔는지 팝업 띄우기 등의 작업
         //ingameLogicManager.AddActionOnStartEnemyTurn(); // 적 턴이 시작될 때 적 턴 시작 타이틀을 띄우는 등의 작업
         //ingameLogicManager.AddActionOnEndEnemyTurn();   // 적 턴에서 어떤 주사위 결과가 나왔는지 팝업 띄우기 등의 작업
@@ -85,9 +94,14 @@ public class IngameUIManager : MonoBehaviour
             waiting = false;
             try
             {
-                rolledInfos[diceIndex].SetDice(dcdata);
+                rolledInfos[diceIndex].SetDice(dcdata,
+                    delegate ()
+                    {
+                        IngameLogicManager.instance.SelectDiceSlot(diceIndex);
+                    });
+
             }
-            catch(Exception e)
+            catch (Exception e)
             {
 
             }
@@ -143,6 +157,34 @@ public class IngameUIManager : MonoBehaviour
     private void OnRollCompleteTurn(UnitStatusData unit, DiceConsequenceData dcdata, int diceIndex)
     {
         StartCoroutine(ShowRollDice(dcdata, diceIndex));
+    }
+
+    private void OnSelectDice(int diceIndex)
+    {
+        foreach(var r in rolledInfos)
+        {
+            r.SetSelected(false);
+        }
+
+        if(diceIndex >= 0 && diceIndex < rolledInfos.Length)
+        {
+            rolledInfos[diceIndex].SetSelected(true);
+        }
+    }
+    private void OnUseDice(UnitStatusData unit, DiceConsequenceData diceData, int diceIndex, List<ActionResultData> resultList)
+    {
+        foreach (var r in rolledInfos)
+        {
+            r.SetSelected(false);
+        }
+        try
+        {
+            rolledInfos[diceIndex].SetToUsed();
+        }
+        catch(Exception e)
+        {
+
+        }
     }
     private void OnEndTurn(UnitStatusData unit)
     {

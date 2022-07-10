@@ -96,8 +96,12 @@ public class IngameUIManager : MonoBehaviour
         return this;
     }
 
+    bool isPlayingDice;
+
     IEnumerator ShowRollDice(DiceConsequenceData dcdata, int diceIndex)
     {
+        // 대충 굴리는 연출
+        waiting = true;
         imgAnimator.transform.localScale = Vector3.one;
         yield return null;
         imgAnimator.SetAlpha(1f);
@@ -105,8 +109,6 @@ public class IngameUIManager : MonoBehaviour
         yield return CommonUtility.GetYieldSec(1.75f);
         imgAnimator.SetAlpha(0f);
 
-        // 대충 굴리는 연출
-        waiting = true;
 
         diceAnimator.PlayAnimation(dcdata.behaviourState, dcdata.actingPower, diceIndex, delegate ()
         {

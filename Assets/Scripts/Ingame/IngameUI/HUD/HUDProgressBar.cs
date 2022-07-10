@@ -58,7 +58,7 @@ public class HUDProgressBar : MonoBehaviour
 
     public void CalculateProgress()
     {
-        var progress = currentValue / maxValue;
+        var progress = Mathf.Max(0, currentValue / maxValue);
         var clampedValue = progress.Clamp01Value();
         progressBar.size = progressBar.size.SetX(progress);
         value = progress;

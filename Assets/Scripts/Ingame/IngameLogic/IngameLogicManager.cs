@@ -457,7 +457,7 @@ public class IngameLogicManager : MonoBehaviour
                         foreach(var monster in monsterDataList)
                         {
                             monster.TakeDamage(diceResult.actingPower);
-                            resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                            resultList.Add(new ActionResultData(monster, diceResult.actingPower));
                         }
                     }
                     else
@@ -465,7 +465,7 @@ public class IngameLogicManager : MonoBehaviour
                         if(playerData != null)
                         {
                             playerData.TakeDamage(diceResult.actingPower);
-                            resultList.Add(new ActionResultData(unit, diceResult.actingPower));
+                            resultList.Add(new ActionResultData(playerData, diceResult.actingPower));
                         }
                     }
                     break;

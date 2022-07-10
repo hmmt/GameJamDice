@@ -149,7 +149,8 @@ public class UnitViewerManager : MonoBehaviour
         try
         {
             if(diceData.behaviourState == BehaviourState.offense ||
-                diceData.behaviourState == BehaviourState.poison)
+                diceData.behaviourState == BehaviourState.poison ||
+                diceData.behaviourState == BehaviourState.lightning )
             {
                 var actor = FindUnit(unit);
                 if (actor != null)

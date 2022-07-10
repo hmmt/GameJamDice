@@ -6,6 +6,7 @@ using System.Linq;
 
 public class IngameLogicManager : MonoBehaviour
 {
+    [SerializeField] SpriteRendererAnimator animator;
     public class TurnInfo
     {
         public UnitStatusData unit = null;
@@ -131,6 +132,7 @@ public class IngameLogicManager : MonoBehaviour
                 monster.TakeDamage(100);
             }
         }
+
     }
     #region logic
 

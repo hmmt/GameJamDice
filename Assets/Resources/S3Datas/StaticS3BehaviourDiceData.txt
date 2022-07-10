@@ -1,4 +1,4 @@
-0	TRUE	permanent	offense	offense	offense	offense	defense	defense	0
+0	TRUE	permanent	offense	offense	offense	offense	offense	defense	0
 1	FALSE	temporary	none	none	offense	offense	offense	defense	0
 2	FALSE	permanent	none	none	offense	offense	offense	poison	60
 3	FALSE	temporary	none	none	offense	offense	offense	recovery	0

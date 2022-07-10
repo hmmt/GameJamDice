@@ -23,6 +23,8 @@ public class UnitViewer : MonoBehaviour
 
     [SerializeField] GameObject selectMark;
 
+    [SerializeField] TextMeshPro hpText;
+
     private SpriteSet spriteSet = null;
 
     public UnitStatusData data { private set; get; }
@@ -66,6 +68,8 @@ public class UnitViewer : MonoBehaviour
         hpBar.SetCurrentValue(data.hp);
         hpBar.CalculateProgress();
 
+        hpText.text = string.Format("{0}/{1}", data.hp, data.maxHp);
+
         if (data.shield > 0)
         {
             shieldRoot.SetActive(true);
@@ -90,6 +94,7 @@ public class UnitViewer : MonoBehaviour
         {
             rendererRoot.gameObject.SetActive(false);
             hpBar.gameObject.SetActive(false);
+            hpText.text = "";
         }
         else
         {

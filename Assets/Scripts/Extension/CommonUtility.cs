@@ -62,7 +62,20 @@ public static class CommonUtility
         }
         return list;
     }
-
+    public static IEnumerator AnimateImage(this Image image, List<Sprite> targetSprites, float delay, bool isInfinite = false, Action onComplete = null)
+    {
+        do
+        {
+            for (int i = 0; i < targetSprites.Count; i++)
+            {
+                var targetSprite = targetSprites[i];
+                image.SetSprite(targetSprite);
+                yield return GetYieldSec(delay);
+            }
+        }
+        while (isInfinite);
+        onComplete?.Invoke();
+    }
     public static void InterpolateImageAlpha(this Image targetImage, float targetAlpha, float t)
         => targetImage.color = targetImage.color.CopyColor(a: Mathf.Lerp(targetImage.color.a, targetAlpha, t));
 

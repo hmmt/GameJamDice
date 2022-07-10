@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ public class IngameUIManager : MonoBehaviour
 
     [SerializeField] GameObject losePopup;
     [SerializeField] IngamePanelInventory ingamePanelLaboratory;
-
+    [SerializeField] ImageAnimator imgAnimator;
 
     private Turn _lastTurn = Turn.None;
 
@@ -97,9 +98,15 @@ public class IngameUIManager : MonoBehaviour
 
     IEnumerator ShowRollDice(DiceConsequenceData dcdata, int diceIndex)
     {
+        imgAnimator.transform.localScale = Vector3.one;
+        yield return null;
+        imgAnimator.SetAlpha(1f);
+        imgAnimator.PlayAnim();
+        yield return CommonUtility.GetYieldSec(1.75f);
+        imgAnimator.SetAlpha(0f);
+
         // 대충 굴리는 연출
         waiting = true;
-        yield return null;
 
         diceAnimator.PlayAnimation(dcdata.behaviourState, dcdata.actingPower, diceIndex, delegate ()
         {
@@ -118,10 +125,9 @@ public class IngameUIManager : MonoBehaviour
 
             }
         });
-
     }
 
-#region callback
+    #region callback
     private void OnStartBattle()
     {
         _lastTurn = Turn.None;

@@ -139,10 +139,10 @@ public class UnitViewerManager : MonoBehaviour
         {
             monster.HideSelectionMark();
         }
-        StartCoroutine(PlayDamageEffect(unit, diceData, resultList));
+        StartCoroutine(PlayTextEffect(unit, diceData, resultList));
     }
 
-    IEnumerator PlayDamageEffect(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
+    IEnumerator PlayTextEffect(UnitStatusData unit, DiceConsequenceData diceData, List<ActionResultData> resultList)
     {
         waiting = true;
         yield return null;
@@ -162,7 +162,18 @@ public class UnitViewerManager : MonoBehaviour
                     var viewer = FindUnit(result.unit);
                     if (viewer != null)
                     {
-                        damageEffectPool.PlayDamageEffect(result.damage, viewer.transform.position);
+                        damageEffectPool.PlayDamageEffect(result.value, viewer.transform.position);
+                    }
+                }
+            }
+            else if(diceData.behaviourState == BehaviourState.recovery)
+            {
+                foreach (var result in resultList)
+                {
+                    var viewer = FindUnit(result.unit);
+                    if (viewer != null)
+                    {
+                        damageEffectPool.PlayHealEffect(result.value, viewer.transform.position);
                     }
                 }
             }

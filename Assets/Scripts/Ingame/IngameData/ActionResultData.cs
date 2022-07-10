@@ -1,15 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public struct ActionResultData
 {
     public UnitStatusData unit;
-    public int damage;
+    public int value;
 
-    public ActionResultData(UnitStatusData unit, int damage)
+    public ActionResultData(UnitStatusData unit, int value)
     {
         this.unit = unit;
-        this.damage = damage;
+        this.value = value;
     }
 }

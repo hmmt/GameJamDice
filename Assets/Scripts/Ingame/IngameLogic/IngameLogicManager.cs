@@ -478,6 +478,7 @@ public class IngameLogicManager : MonoBehaviour
                     break;
                 case BehaviourState.recovery:
                     actor.RecoverHp(diceResult.actingPower);
+                    resultList.Add(new ActionResultData(actor, diceResult.actingPower));
                     break;
             }
 

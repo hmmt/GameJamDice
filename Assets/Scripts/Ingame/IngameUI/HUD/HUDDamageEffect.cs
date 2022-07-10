@@ -31,6 +31,12 @@ public class HUDDamageEffect : MonoBehaviour
         return this;
     }
 
+    public HUDDamageEffect SetColor(Color color)
+    {
+        txtMeshPro.color = color;
+        return this;
+    }
+
     public void PlayEffect(Action onComplete)
     {
         var startPos = tfBody.position;

@@ -75,11 +75,11 @@ public class UnitViewer : MonoBehaviour
         {
             shieldRoot.SetActive(false);
         }
-
+        
         if(data.posionCount > 0)
         {
             poisonRoot.SetActive(true);
-            poisonText.text = data.shield.ToString();
+            poisonText.text = data.posionCount.ToString();
         }
         else
         {

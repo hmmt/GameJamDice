@@ -42,6 +42,17 @@ public class DamageEffectPool : MonoBehaviour
         effect.SetDamage(damage)
               .SetText(damage.ToString())
               .SetPosition(pos)
+              .SetColor(Color.white)
+              .PlayEffect(() => damageEffectPool.Despawn(effect.gameObject));
+    }
+
+    public void PlayHealEffect(int damage, Vector3 pos)
+    {
+        var effect = SpawnDamageEffect();
+        effect.SetDamage(damage)
+              .SetText(damage.ToString())
+              .SetPosition(pos)
+              .SetColor(Color.green)
               .PlayEffect(() => damageEffectPool.Despawn(effect.gameObject));
     }
 }

@@ -16,6 +16,7 @@ public class S3DungeonData : S3DataBase
     public List<int> monsterIndexList;
     public List<int> behaviourDiceRewardList;
     public List<int> actingPowerDiceRewardList;
+    public int dungeonClearCurrencyValue;
 
     public override void InitData(string[] data)
     {
@@ -43,5 +44,7 @@ public class S3DungeonData : S3DataBase
             var targetData = int.Parse(actingPowerDiceRewardListData[n]);
             actingPowerDiceRewardList.Add(targetData);
         }
+
+        dungeonClearCurrencyValue = int.Parse(data[i++]);
     }
 }

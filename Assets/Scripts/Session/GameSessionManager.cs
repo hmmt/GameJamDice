@@ -13,6 +13,7 @@ public class GameSessionManager : MonoBehaviour
     [SerializeField] UnitViewerManager unitManager;
     [SerializeField] FieldMapViewer fieldMap;
     [SerializeField] HUDStageLocationShower stageLocationShower;
+    [SerializeField] RewardPopup rewardPopup;
 
     SessionPlayer player;
 
@@ -101,6 +102,92 @@ public class GameSessionManager : MonoBehaviour
         {
             // 게임 오버
             //UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+        }
+        else
+        {
+            GainReward();
+            //MoveToNext();
+        }
+    }
+
+    private void GainReward()
+    {
+        var dungeonData = StaticDataManager.instance.GetDungeon(x => x.index == player.currentDugeonNodeId);
+        if(dungeonData != null)
+        {
+            int currencyValueReward = 0;
+            List<RewardData> rewards = new List<RewardData>();
+
+            List<int> rewardActing = new List<int>(dungeonData.actingPowerDiceRewardList);
+            List<int> rewardBehaviour = new List<int>(dungeonData.behaviourDiceRewardList);
+
+            for(int i=0; i<3; i++)
+            {
+                if (rewardActing.Count == 0 && rewardBehaviour.Count == 0)
+                {
+                    break;
+                }
+
+                if ((UnityEngine.Random.value < 0.5f && rewardActing.Count > 0)
+                    || (rewardActing.Count > 0 && rewardBehaviour.Count == 0))
+                {
+                    var selected = rewardActing[UnityEngine.Random.Range(0, rewardActing.Count)];
+
+                    rewardActing.Remove(selected);
+
+                    if (selected >= 0)
+                    {
+                        rewards.Add(new RewardData(false, selected));
+                    }
+                }
+                else
+                {
+                    var selected = rewardBehaviour[UnityEngine.Random.Range(0, rewardActing.Count)];
+
+                    rewardBehaviour.Remove(selected);
+
+                    if (selected >= 0)
+                    {
+                        rewards.Add(new RewardData(true, selected));
+                    }
+                }
+            }
+
+            currencyValueReward = dungeonData.dungeonClearCurrencyValue;
+
+            PermanentPlayer.instance.currency += currencyValueReward;
+
+            if(rewards.Count > 0)
+            {
+                rewardPopup.Open(currencyValueReward, rewards, delegate (RewardData reward)
+                {
+                    if (reward.staticDataIndex != -1)
+                    {
+                        if (reward.isBehaviour)
+                        {
+                            var data = StaticDataManager.instance.GetBehaviourDice(x => x.index == reward.staticDataIndex);
+                            if (data != null)
+                            {
+                                player.inventory.behaviourDiceList.Add(data);
+                            }
+                        }
+                        else
+                        {
+                            var data = StaticDataManager.instance.GetActionPowerDice(x => x.index == reward.staticDataIndex);
+                            if (data != null)
+                            {
+                                player.inventory.actingPowerDiceList.Add(data);
+                            }
+                        }
+                    }
+
+                    MoveToNext();
+                });
+            }
+            else
+            {
+                MoveToNext();
+            }
         }
         else
         {
